@@ -803,78 +803,212 @@
       });
     }
 
-    async function waitForImagesInElement(element, timeoutMs = 8000) {
-      const images = Array.from(element.querySelectorAll("img"));
-      const waits = images.map((img) => {
-        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
-        return new Promise((resolve) => {
-          const done = () => resolve();
-          img.addEventListener("load", done, { once: true });
-          img.addEventListener("error", done, { once: true });
-        });
+    function loadCanvasImage(src) {
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = src;
       });
-
-      await Promise.race([
-        Promise.all(waits),
-        wait(timeoutMs)
-      ]);
     }
 
-    function withTimeout(promise, ms, message) {
-      return Promise.race([
-        promise,
-        new Promise((_, reject) => window.setTimeout(() => reject(new Error(message)), ms))
+    function roundedRectPath(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + width - r, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+      ctx.lineTo(x + width, y + height - r);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+      ctx.lineTo(x + r, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function drawCoverImage(ctx, image, x, y, width, height, selected) {
+      if (!image) {
+        ctx.save();
+        roundedRectPath(ctx, x, y, width, height, 22);
+        ctx.clip();
+        const emptyGradient = ctx.createLinearGradient(x, y, x + width, y + height);
+        emptyGradient.addColorStop(0, "#fff0f7");
+        emptyGradient.addColorStop(1, "#fffaf0");
+        ctx.fillStyle = emptyGradient;
+        ctx.fillRect(x, y, width, height);
+        ctx.restore();
+        return;
+      }
+
+      const posX = selected && selected.type === "upload" && selected.posX !== undefined ? selected.posX : 50;
+      const posY = selected && selected.type === "upload" && selected.posY !== undefined ? selected.posY : 0;
+      const scale = selected && selected.type === "upload" && selected.scale !== undefined ? selected.scale / 100 : 1;
+      const baseScale = Math.max(width / image.naturalWidth, height / image.naturalHeight) * scale;
+      const drawW = image.naturalWidth * baseScale;
+      const drawH = image.naturalHeight * baseScale;
+      const dx = x + (width - drawW) * (posX / 100);
+      const dy = y + (height - drawH) * (posY / 100);
+
+      ctx.save();
+      roundedRectPath(ctx, x, y, width, height, 22);
+      ctx.clip();
+      ctx.drawImage(image, dx, dy, drawW, drawH);
+      ctx.restore();
+
+      // うっすら白いベール。CSSの疑似要素より軽い処理で再現。
+      ctx.save();
+      roundedRectPath(ctx, x, y, width, height, 22);
+      ctx.clip();
+      ctx.fillStyle = "rgba(255,255,255,0.10)";
+      ctx.fillRect(x, y, width, height);
+      ctx.restore();
+    }
+
+    function drawRotatedImage(ctx, image, x, y, width, rotationDeg) {
+      if (!image) return;
+      const height = width * (image.naturalHeight / image.naturalWidth);
+      ctx.save();
+      ctx.translate(x + width / 2, y + height / 2);
+      ctx.rotate(rotationDeg * Math.PI / 180);
+      ctx.drawImage(image, -width / 2, -height / 2, width, height);
+      ctx.restore();
+    }
+
+    async function createManualResultCanvas() {
+      const member = getCurrentMember();
+      const userName = (document.getElementById("userNameInput").value.trim()) || "muze";
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const W = 1200;
+      const H = 1200;
+      canvas.width = W;
+      canvas.height = H;
+
+      // 背景テーマ。保存はCanvasで直接描くので、html2canvasの停止問題を回避できる。
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      if (currentBgThemeId === "soda") {
+        bg.addColorStop(0, "#fbfeff");
+        bg.addColorStop(0.56, "#eef8ff");
+        bg.addColorStop(1, "#fff7fb");
+      } else if (currentBgThemeId === "classic") {
+        bg.addColorStop(0, "#fffaf3");
+        bg.addColorStop(0.58, "#f5e8dc");
+        bg.addColorStop(1, "#fff7ee");
+      } else {
+        bg.addColorStop(0, "#fffafd");
+        bg.addColorStop(0.58, "#fff1f7");
+        bg.addColorStop(1, "#fff8ef");
+      }
+      ctx.fillStyle = bg;
+      roundedRectPath(ctx, 0, 0, W, H, 34);
+      ctx.fill();
+
+      // ふわっとした背景の光
+      const r1 = ctx.createRadialGradient(130, 70, 0, 130, 70, 420);
+      r1.addColorStop(0, currentBgThemeId === "soda" ? "rgba(199,237,255,.95)" : currentBgThemeId === "classic" ? "rgba(244,214,196,.95)" : "rgba(255,188,216,.95)");
+      r1.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = r1;
+      ctx.fillRect(0, 0, W, H);
+
+      const r2 = ctx.createRadialGradient(1020, 45, 0, 1020, 45, 420);
+      r2.addColorStop(0, currentBgThemeId === "classic" ? "rgba(255,246,228,.92)" : "rgba(239,226,255,.90)");
+      r2.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = r2;
+      ctx.fillRect(0, 0, W, H);
+
+      // 素材読み込み
+      const handBase = "assets/handwrite/white";
+      const [kicker, heart, numa, best, cute, cool, danger, legend] = await Promise.all([
+        loadCanvasImage(`${handBase}/my-favorite.png`),
+        loadCanvasImage(`${handBase}/heart.png`),
+        loadCanvasImage(`${handBase}/numa.png`),
+        loadCanvasImage(`${handBase}/current-best.png`),
+        loadCanvasImage(`${handBase}/cute.png`),
+        loadCanvasImage(`${handBase}/cool.png`),
+        loadCanvasImage(`${handBase}/zurui.png`),
+        loadCanvasImage(`${handBase}/legend.png`)
       ]);
+
+      if (kicker) drawRotatedImage(ctx, kicker, 28, 58, 118, -5);
+
+      // タイトル
+      ctx.save();
+      ctx.fillStyle = currentBgThemeId === "night" ? "#ffffff" : currentBgThemeId === "soda" ? "#27344f" : currentBgThemeId === "classic" ? "#46322d" : "#3a2531";
+      ctx.shadowColor = "rgba(255,255,255,.92)";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 3;
+      ctx.font = "900 76px system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif";
+      ctx.textBaseline = "top";
+      ctx.fillText(member.name, 26, 118);
+      ctx.fillText("VISUAL", 26, 188);
+      ctx.restore();
+
+      // 画像グリッド
+      const gridX = 26;
+      const gridY = 250;
+      const gridW = 1148;
+      const gridH = 738;
+      const itemW = gridW / 3;
+      const itemH = gridH / 2;
+      const imagePromises = themes.map((theme) => {
+        const selected = selectedImages[theme.id];
+        return selected && selected.src ? loadCanvasImage(selected.src) : Promise.resolve(null);
+      });
+      const loadedImages = await Promise.all(imagePromises);
+
+      themes.forEach((theme, index) => {
+        const col = index % 3;
+        const row = Math.floor(index / 3);
+        const x = gridX + col * itemW;
+        const y = gridY + row * itemH;
+        const selected = selectedImages[theme.id];
+
+        ctx.save();
+        ctx.fillStyle = "rgba(255,255,255,.76)";
+        roundedRectPath(ctx, x, y, itemW, itemH, 22);
+        ctx.fill();
+        ctx.restore();
+
+        drawCoverImage(ctx, loadedImages[index], x, y, itemW, itemH, selected);
+      });
+
+      // 手書きラベル。CSSの%位置に合わせて固定値化。
+      drawRotatedImage(ctx, numa, 0.048 * W, 0.505 * H, 0.14 * W, -6);
+      drawRotatedImage(ctx, best, 0.408 * W, 0.500 * H, 0.17 * W, 3);
+      drawRotatedImage(ctx, cute, W - 0.073 * W - 0.13 * W, 0.505 * H, 0.13 * W, -4);
+      drawRotatedImage(ctx, cool, 0.070 * W, 0.790 * H, 0.13 * W, 4);
+      drawRotatedImage(ctx, danger, 0.410 * W, 0.780 * H, 0.18 * W, -3);
+      drawRotatedImage(ctx, legend, W - 0.077 * W - 0.13 * W, 0.780 * H, 0.13 * W, 3);
+      if (heart) {
+        ctx.globalAlpha = 0.45;
+        drawRotatedImage(ctx, heart, 60, 216, 44, -14);
+        ctx.globalAlpha = 1;
+      }
+
+      // selected by
+      ctx.save();
+      ctx.fillStyle = currentBgThemeId === "night" ? "rgba(255,255,255,.72)" : currentBgThemeId === "soda" ? "rgba(39,52,79,.62)" : currentBgThemeId === "classic" ? "rgba(70,50,45,.62)" : "rgba(53,37,47,.66)";
+      ctx.font = "900 18px system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
+      ctx.fillText(`selected by ${userName}`.toLowerCase(), 1148, 1016);
+      ctx.restore();
+
+      return canvas;
     }
 
     async function saveResultImage() {
       const member = getCurrentMember();
       const originalText = saveBtn.textContent;
+      const fileName = `oshi-visual-6-${member.id}.png`;
 
       saveBtn.disabled = true;
       saveBtn.textContent = "画像を作成中...";
       setStatus("画像を作成中...");
 
       try {
-        if (typeof html2canvas !== "function") {
-          throw new Error("html2canvas is not loaded");
-        }
-
-        if (document.fonts && document.fonts.ready) {
-          await withTimeout(document.fonts.ready, 3000, "Font loading timeout").catch(() => null);
-        }
-
-        await waitForImagesInElement(resultCard, 8000);
-        await wait(100);
-
-        // 重要：保存時もプレビューと同じサイズのまま撮る。
-        // ただしhtml2canvasが苦手なmix-blend-modeや疑似要素だけ一時的に止める。
-        resultCard.classList.add("exporting");
-
-        const rect = resultCard.getBoundingClientRect();
-        const captureScale = Math.max(2, Math.min(3, 1200 / Math.max(rect.width, 1)));
-
-        const canvas = await withTimeout(
-          html2canvas(resultCard, {
-            backgroundColor: null,
-            scale: captureScale,
-            useCORS: true,
-            allowTaint: false,
-            logging: false,
-            imageTimeout: 8000,
-            removeContainer: true,
-            onclone: (doc) => {
-              const clonedCard = doc.getElementById("resultCard");
-              if (clonedCard) clonedCard.classList.add("exporting");
-            }
-          }),
-          20000,
-          "Capture timeout"
-        );
-
-        resultCard.classList.remove("exporting");
-
-        const fileName = `oshi-visual-6-${member.id}.png`;
+        const canvas = await createManualResultCanvas();
         const blob = await canvasToBlob(canvas);
         const file = new File([blob], fileName, { type: "image/png" });
 
@@ -892,7 +1026,6 @@
               setStatus("共有をキャンセルしました。");
               return;
             }
-            // 共有に失敗した場合は保存へフォールバック
           }
         }
 
@@ -902,7 +1035,6 @@
         console.error(error);
         setStatus("画像の作成に失敗しました。ブラウザで開き直して再試行してください。");
       } finally {
-        resultCard.classList.remove("exporting");
         saveBtn.disabled = false;
         saveBtn.textContent = originalText;
       }
