@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>推しビジュ6選</title>
+  <meta name="description" content="6つのテーマで推しの好きなビジュを選んで、タグ画っぽい1枚を作れるメーカーです。" />
+  <meta property="og:title" content="推しビジュ6選" />
+  <meta property="og:description" content="6つのテーマで選ぶだけ。推しの好きなビジュを、可愛く1枚に。" />
+  <meta property="og:type" content="website" />
+  <style>
+    :root {
+      --main: #ff77ad;
+      --main-dark: #e84d8d;
+      --pink-soft: #fff1f7;
+      --lavender: #f1e9ff;
+      --cream: #fff9ec;
+      --ink: #35252f;
+      --soft: #927f88;
+      --line: rgba(255, 119, 173, 0.18);
+      --shadow: 0 18px 48px rgba(216, 78, 136, 0.16);
+      --hand-font: "Chalkboard SE", "Marker Felt", "Bradley Hand", "Segoe Print", "Comic Sans MS", "Hiragino Maru Gothic ProN", "Yu Gothic", cursive, sans-serif;
+      --ui-font: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--ui-font);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(255, 196, 221, 0.72) 0, transparent 32%),
+        radial-gradient(circle at 86% 8%, rgba(241, 233, 255, 0.9) 0, transparent 28%),
+        radial-gradient(circle at 50% 100%, rgba(255, 249, 236, 1) 0, transparent 34%),
+        linear-gradient(180deg, #fff7fb 0%, #ffffff 46%, #fff2f8 100%);
+      overflow-x: hidden;
+    }
+    button, input, select { font-family: inherit; }
+    img { display: block; max-width: 100%; }
+    .page { width: min(100%, 1040px); margin: 0 auto; padding: 24px 14px 48px; }
+
+    /* ヘッダー */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px 18px 22px;
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255, 184, 215, 0.55), transparent 30%),
+        radial-gradient(circle at 92% 0%, rgba(239, 226, 255, 0.85), transparent 32%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 246, 251, 0.88));
+      box-shadow: var(--shadow);
+    }
+    .hero::before, .hero::after {
+      content: "♡";
+      position: absolute;
+      font-family: var(--hand-font);
+      color: rgba(255, 119, 173, 0.28);
+      pointer-events: none;
+    }
+    .hero::before { right: 20px; top: 12px; font-size: 38px; transform: rotate(12deg); }
+    .hero::after { left: 18px; bottom: 8px; font-size: 26px; transform: rotate(-10deg); }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line); color: var(--main-dark);
+      font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
+    }
+    .hero h1 { margin: 14px 0 8px; font-size: clamp(34px, 11vw, 64px); line-height: 0.95; letter-spacing: -0.06em; color: var(--ink); }
+    .hero h1 span { display: inline-block; color: var(--main-dark); }
+    .hero-copy { margin: 0; color: var(--soft); font-size: 14px; line-height: 1.85; font-weight: 700; }
+    .hero-note { display: inline-block; margin-top: 2px; color: var(--main-dark); font-size: 12px; line-height: 1.6; }
+    .member-panel { margin-top: 18px; display: grid; gap: 8px; }
+    .control-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    @media (max-width: 560px) { .control-grid { grid-template-columns: 1fr; } }
+    .member-panel label { font-size: 12px; font-weight: 900; color: var(--main-dark); letter-spacing: 0.08em; }
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: "⌄"; position: absolute; right: 17px; top: 50%; transform: translateY(-58%); color: var(--main-dark); font-size: 22px; pointer-events: none; }
+    .member-select {
+      width: 100%; appearance: none;
+      padding: 15px 44px 15px 16px;
+      border-radius: 18px; border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, #fff7fb);
+      color: var(--ink); font-size: 15px; font-weight: 900;
+      box-shadow: 0 10px 26px rgba(216, 78, 136, 0.10);
+    }
+
+    .app-grid { display: grid; gap: 18px; margin-top: 18px; }
+    .section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 26px 0 12px; }
+    .section-title h2 { margin: 0; font-size: 18px; letter-spacing: -0.03em; }
+    .section-title p { margin: 0; color: var(--soft); font-size: 12px; font-weight: 700; line-height: 1.5; text-align: right; }
+
+    /* テーマカード */
+    .theme-list { display: grid; gap: 14px; }
+    .theme-card {
+      padding: 14px; border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,247,251,.90));
+      box-shadow: 0 12px 34px rgba(216, 78, 136, 0.11);
+    }
+    .theme-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .theme-number {
+      width: 34px; height: 34px; display: grid; place-items: center;
+      border-radius: 999px; background: linear-gradient(135deg, var(--main), #ffc1da);
+      color: #fff; font-size: 13px; font-weight: 900;
+      box-shadow: 0 8px 18px rgba(232, 77, 141, 0.22);
+    }
+    .theme-title { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: -0.03em; }
+    .selected-preview {
+      display: grid; grid-template-columns: 74px 1fr; gap: 12px; align-items: center;
+      margin-bottom: 12px; padding: 10px; border-radius: 18px;
+      background: rgba(255,255,255,.64); border: 1px dashed rgba(255,119,173,.25);
+    }
+    .selected-thumb {
+      width: 74px; height: 74px; border-radius: 16px; overflow: hidden;
+      background: radial-gradient(circle at 30% 20%, rgba(255,119,173,.20), transparent 30%), linear-gradient(135deg, #fff, #fff0f6);
+      display: grid; place-items: center; color: var(--main-dark);
+      font-size: 11px; font-weight: 900; text-align: center; line-height: 1.35;
+    }
+    .selected-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center top; transform-origin: center center; }
+    .selected-text strong { display: block; font-size: 13px; margin-bottom: 5px; }
+    .selected-text span { display: block; color: var(--soft); font-size: 12px; font-weight: 700; line-height: 1.55; }
+    .photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 12px; max-height: 198px; overflow: auto; padding: 2px 2px 6px; }
+    .photo-option { position: relative; padding: 0; border: 0; border-radius: 13px; overflow: hidden; background: #fff; aspect-ratio: 1/1; cursor: pointer; box-shadow: 0 4px 12px rgba(45,36,44,.10); }
+    .photo-option img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .photo-option.is-selected { outline: 3px solid var(--main); outline-offset: 2px; }
+    .photo-option.is-selected::after { content: "✓"; position: absolute; right: 4px; top: 4px; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 999px; background: var(--main); color: #fff; font-size: 12px; font-weight: 900; }
+    .upload-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .upload-label, .clear-btn, .save-btn { border: 0; border-radius: 999px; cursor: pointer; font-weight: 900; letter-spacing: -0.02em; }
+    .upload-label { display: inline-flex; align-items: center; justify-content: center; padding: 11px 14px; background: #fff; color: var(--main-dark); border: 1px solid var(--line); box-shadow: 0 8px 18px rgba(216,78,136,.10); font-size: 13px; }
+    .upload-label input { display: none; }
+    .clear-btn { padding: 11px 12px; background: rgba(255,255,255,.56); color: var(--soft); font-size: 12px; border: 1px solid rgba(146,127,136,.15); }
+    .position-slider-wrap { display: none; width: 100%; margin-top: 8px; padding: 10px 14px; border-radius: 16px; background: rgba(255,255,255,.72); border: 1px solid var(--line); }
+    .position-slider-wrap.is-visible { display: grid; gap: 10px; }
+    .position-slider-wrap label { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 900; color: var(--main-dark); margin-bottom: 6px; }
+    .position-slider-wrap input[type=range] { width: 100%; accent-color: var(--main); cursor: pointer; }
+
+    /* プレビュー */
+    .preview-sticky { margin-top: 22px; }
+    .preview-panel { padding: 16px; border-radius: 28px; background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,247,251,.92)); border: 1px solid rgba(255,255,255,.78); box-shadow: var(--shadow); }
+    .preview-panel h2 { margin: 0 0 4px; font-size: 18px; letter-spacing: -0.04em; }
+    .preview-panel p { margin: 0 0 14px; color: var(--soft); font-size: 12px; font-weight: 700; line-height: 1.65; }
+
+    /* 完成画像本体：タグ画っぽさの調整は主にここ */
+    .result-card {
+      --result-main: #ff77ad;
+      --result-main-dark: #e84d8d;
+      --result-label: #ff5f9e;
+      --result-ink: #3a2531;
+      --result-soft: rgba(53,37,47,.66);
+      position: relative; width: min(100%, 760px); aspect-ratio: 1/1; margin: 0 auto; overflow: hidden;
+      border-radius: 26px;
+      background: radial-gradient(circle at 12% 4%, rgba(255,188,216,.95), transparent 30%), radial-gradient(circle at 88% 0%, rgba(239,226,255,.95), transparent 32%), linear-gradient(180deg, #fffafd 0%, #fff1f7 58%, #fff8ef 100%);
+      box-shadow: 0 18px 48px rgba(216,78,136,.16);
+      padding: 32px 14px 16px;
+    }
+    .result-card.bg-strawberry {
+      --result-main: #ff77ad;
+      --result-main-dark: #e84d8d;
+      --result-label: #ff5f9e;
+      --result-ink: #3a2531;
+      --result-soft: rgba(53,37,47,.66);
+      background: radial-gradient(circle at 12% 4%, rgba(255,188,216,.95), transparent 30%), radial-gradient(circle at 88% 0%, rgba(239,226,255,.95), transparent 32%), linear-gradient(180deg, #fffafd 0%, #fff1f7 58%, #fff8ef 100%);
+    }
+    .result-card.bg-soda {
+      --result-main: #84c7f2;
+      --result-main-dark: #5aa8dc;
+      --result-label: #5faee5;
+      --result-ink: #27344f;
+      --result-soft: rgba(39,52,79,.62);
+      background: radial-gradient(circle at 10% 2%, rgba(199,237,255,.96), transparent 30%), radial-gradient(circle at 88% 4%, rgba(233,224,255,.88), transparent 32%), linear-gradient(180deg, #fbfeff 0%, #eef8ff 56%, #fff7fb 100%);
+    }
+    .result-card.bg-night {
+      --result-main: #ff86c4;
+      --result-main-dark: #ff9bd2;
+      --result-label: #ff97cf;
+      --result-ink: #ffffff;
+      --result-soft: rgba(255,255,255,.72);
+      background: radial-gradient(circle at 10% 2%, rgba(255,121,190,.50), transparent 30%), radial-gradient(circle at 88% 0%, rgba(117,98,218,.64), transparent 32%), linear-gradient(180deg, #171225 0%, #29214a 55%, #5c3f76 100%);
+    }
+    .result-card.bg-classic {
+      --result-main: #b87566;
+      --result-main-dark: #9e5e51;
+      --result-label: #9e5e51;
+      --result-ink: #46322d;
+      --result-soft: rgba(70,50,45,.62);
+      background: radial-gradient(circle at 12% 4%, rgba(244,214,196,.95), transparent 30%), radial-gradient(circle at 88% 0%, rgba(255,246,228,.92), transparent 32%), linear-gradient(180deg, #fffaf3 0%, #f5e8dc 58%, #fff7ee 100%);
+    }
+    .result-card.exporting { width: 1200px !important; height: 1200px !important; padding: 56px 26px 26px !important; border-radius: 42px !important; box-shadow: none !important; }
+    .result-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 42%, rgba(255,255,255,.12), transparent 34%), linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,187,217,.10)); z-index: 5; mix-blend-mode: screen; }
+    .result-header { position: relative; z-index: 8; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .result-kicker-image { display: block; width: auto; height: 16px; margin-bottom: 4px; transform: rotate(-5deg); opacity: .95; }
+    .result-card.exporting .result-kicker-image { height: 28px; margin-bottom: 8px; }
+    .result-title { margin: 4px 0 0; font-size: clamp(26px, 8vw, 48px); line-height: .9; letter-spacing: -0.07em; color: var(--result-ink); text-shadow: 0 2px 0 rgba(255,255,255,.9); }
+    .result-card.exporting .result-title { font-size: 78px; }
+    .result-member { flex: 0 0 auto; align-self: flex-start; margin-top: 4px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.68); color: var(--result-main-dark); border: 1px solid rgba(255,119,173,.18); font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+    .result-card.exporting .result-member { padding: 13px 20px; font-size: 18px; }
+    .collage-grid { position: relative; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 0; height: 66%; margin: 0 0 12px; border-radius: 22px; overflow: hidden; }
+    .result-card.exporting .collage-grid { height: 66%; margin-bottom: 18px; border-radius: 34px; gap: 0; }
+    .collage-item { position: relative; min-width: 0; overflow: hidden; border-radius: 20px; background: linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,241,247,.88)); box-shadow: 0 10px 26px rgba(63,40,52,.12), inset 0 0 0 2px rgba(255,255,255,.72); }
+    .result-card.exporting .collage-item { border-radius: 32px; box-shadow: 0 16px 36px rgba(63,40,52,.12), inset 0 0 0 3px rgba(255,255,255,.76); }
+    .collage-item:nth-child(1) { transform: none; z-index: 2; }
+    .collage-item:nth-child(2) { transform: none; z-index: 2; }
+    .collage-item:nth-child(3) { transform: none; z-index: 2; }
+    .collage-item:nth-child(4) { transform: none; z-index: 2; }
+    .collage-item:nth-child(5) { transform: none; z-index: 2; }
+    .collage-item:nth-child(6) { transform: none; z-index: 2; }
+    .result-card.exporting .collage-item:nth-child(2) { transform: none; }
+    .result-card.exporting .collage-item:nth-child(3) { transform: none; }
+    .result-card.exporting .collage-item:nth-child(4) { transform: none; }
+    .result-card.exporting .collage-item:nth-child(5) { transform: none; }
+    .result-card.exporting .collage-item:nth-child(6) { transform: none; }
+    .collage-item img, .collage-placeholder { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .collage-item img { transform-origin: center center; }
+    .collage-item img { transform-origin: center center; }
+    .collage-placeholder { display: grid; place-items: center; padding: 12px; color: rgba(232,77,141,.65); text-align: center; font-size: 12px; font-weight: 900; line-height: 1.45; }
+    .result-card.exporting .collage-placeholder { font-size: 22px; }
+    .collage-item::before { content: ""; position: absolute; inset: -2px; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 58%, rgba(255,255,255,.58) 100%), linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,152,196,.12)); z-index: 2; mix-blend-mode: screen; }
+    .hand-label-image { position: absolute; z-index: 6; display: block; height: auto; }
+
+    /* 文字が大きすぎて下が切れないように、かなり小さく調整 */
+    .label-numa { left: 4.8%; top: 50.5%; width: 14%; transform: rotate(-6deg); }
+    .label-best { left: 40.8%; top: 50%; width: 17%; transform: rotate(3deg); }
+    .label-cute { right: 7.3%; top: 50.5%; width: 13%; transform: rotate(-4deg); }
+
+    /* 下段はさらに上へ移動して、カード下で切れないようにする */
+    .label-cool { left: 7.0%; top: 79%; width: 13%; transform: rotate(4deg); }
+    .label-danger { left: 41.0%; top: 78%; width: 18%; transform: rotate(-3deg); }
+    .label-legend { right: 7.7%; top: 78%; width: 13%; transform: rotate(3deg); }
+    .result-card.exporting .label-numa, .result-card.exporting .label-best, .result-card.exporting .label-cute, .result-card.exporting .label-cool, .result-card.exporting .label-danger, .result-card.exporting .label-legend { filter: none; }
+    .doodle-image { position: absolute; z-index: 7; display: block; opacity: .45; pointer-events: none; }
+    .doodle.one { left: 5%; top: 18%; width: 26px; transform: rotate(-14deg); }
+    .result-card.exporting .doodle.one { width: 44px; }
+    .selected-by { position: relative; z-index: 8; display: flex; justify-content: flex-end; color: var(--result-soft); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: lowercase; }
+    .result-card.exporting .selected-by { font-size: 18px; }
+    .save-actions { display: grid; gap: 9px; margin-top: 14px; }
+    .save-btn { width: 100%; padding: 15px 18px; background: linear-gradient(135deg, var(--main), #ff9fc6); color: #fff; font-size: 15px; box-shadow: 0 12px 28px rgba(232,77,141,.25); }
+    .note { margin: 0; color: var(--soft); font-size: 11px; line-height: 1.6; text-align: center; font-weight: 700; }
+    .status { min-height: 1.4em; margin-top: 8px; color: var(--main-dark); font-size: 12px; font-weight: 900; text-align: center; }
+
+    @media (min-width: 900px) {
+      .page { padding: 34px 24px 64px; }
+      .hero { padding: 36px 34px 30px; }
+      .app-grid { grid-template-columns: minmax(0, 1fr) 420px; align-items: start; gap: 24px; }
+      .preview-sticky { position: sticky; top: 24px; margin-top: 26px; }
+      .photo-grid { grid-template-columns: repeat(8, 1fr); max-height: 210px; }
+    }
+    @media (max-width: 520px) {
+      .page { padding-inline: 10px; }
+      .hero { padding: 24px 15px 20px; }
+      .theme-card { padding: 12px; border-radius: 22px; }
+      .photo-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+      .result-card { padding: 24px 8px 10px; border-radius: 22px; }
+      .result-header { margin-bottom: 14px; }
+      .result-title { font-size: 31px; }
+      .result-member { padding: 7px 9px; font-size: 9px; }
+      .collage-grid { height: 66%; }
+      .result-kicker-image { height: 14px; }
+      .hand-label-image { height: auto; }
+      .label-numa { width: 14%; }
+      .label-best { width: 17%; }
+      .label-cute { width: 13%; }
+      .label-cool { width: 13%; }
+      .label-danger { width: 18%; }
+      .label-legend { width: 13%; }
+      .selected-by { font-size: 9px; }
+      .doodle.one { width: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <h1>推しビジュ<span>6選</span></h1>
+      <p class="hero-copy">6つのテーマでお気に入りの写真を選んでね。<br><span class="hero-note">※アップロードする際は、画像の権利に注意！（写真集ソロショットはNGです）</span></p>
+      <div class="member-panel">
+        <div class="control-grid">
+          <div>
+            <label for="memberSelect">MEMBERを選ぶ</label>
+            <div class="select-wrap"><select id="memberSelect" class="member-select" aria-label="メンバーを選ぶ"></select></div>
+          </div>
+          <div>
+            <label for="bgThemeSelect">背景テーマを選ぶ</label>
+            <div class="select-wrap"><select id="bgThemeSelect" class="member-select" aria-label="背景テーマを選ぶ"></select></div>
+          </div>
+          <div>
+            <label for="userNameInput">あなたの名前</label>
+            <input id="userNameInput" class="member-select" type="text" placeholder="muze" maxlength="20" autocomplete="off" style="padding:15px 16px;">
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="app-grid">
+      <section>
+        <div class="section-title"><h2>テーマごとに写真を選ぶ</h2><p>候補から選ぶか、<br>自分の画像も追加OK</p></div>
+        <div id="themeList" class="theme-list"></div>
+      </section>
+      <aside class="preview-sticky">
+        <div class="preview-panel">
+          <h2>完成プレビュー</h2>
+          <div id="resultCard" class="result-card bg-strawberry">
+            <div class="result-header">
+              <div class="result-title-wrap"><img id="resultKickerImage" class="result-kicker-image" alt="my favorite"><h2 id="resultTitle" class="result-title">KAIRYU<br>VISUAL</h2></div>
+            </div>
+            <div id="collageGrid" class="collage-grid"></div>
+            <img id="labelNuma" class="hand-label-image label-numa" alt="沼落ちビジュ">
+            <img id="labelBest" class="hand-label-image label-best" alt="今の最愛ビジュ">
+            <img id="labelCute" class="hand-label-image label-cute" alt="かわいい">
+            <img id="labelCool" class="hand-label-image label-cool" alt="かっこいい">
+            <img id="labelDanger" class="hand-label-image label-danger" alt="ずるい">
+            <img id="labelLegend" class="hand-label-image label-legend" alt="殿堂入り">
+            <img id="doodleHeartImage" class="doodle-image one" alt="♡">
+            <div id="selectedBy" class="selected-by">selected by muze</div>
+          </div>
+          <div class="save-actions"><button id="saveBtn" class="save-btn" type="button">画像を保存する</button><div id="status" class="status" aria-live="polite"></div></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const members = [
+      { id: "kairyu", name: "KAIRYU" },
+      { id: "naoya", name: "NAOYA" },
+      { id: "ran", name: "RAN" },
+      { id: "seito", name: "SEITO" },
+      { id: "ryuki", name: "RYUKI" },
+      { id: "takuto", name: "TAKUTO" },
+      { id: "hayato", name: "HAYATO" },
+      { id: "eiki", name: "EIKI" }
+    ];
+    const themes = [
+      { id: "numa", label: "沼落ちビジュ" },
+      { id: "best", label: "今の最愛ビジュ" },
+      { id: "cute", label: "かわいい" },
+      { id: "cool", label: "かっこいい" },
+      { id: "danger", label: "ずるい" },
+      { id: "legend", label: "殿堂入り" }
+    ];
+    /*
+      手書きPNG素材の置き場所
+      ------------------------------------------------------------
+      assets/handwrite/white/
+        my-favorite.png
+        numa.png
+        current-best.png
+        cute.png
+        cool.png
+        danger.png
+        legend.png
+        heart.png
+
+      テーマ文言を変える場合は、PNG素材名と assetMap を合わせて変更してください。
+    */
+    const backgroundThemes = [
+      { id: "strawberry", label: "ベリー" },
+      { id: "soda", label: "ソーダ" },
+      { id: "classic", label: "クラシカル" }
+    ];
+    const IMAGE_COUNT = 20;
+    const IMAGE_ORDER_DESCENDING = true; // true=降順（新しい順）, false=昇順（古い順）
+    let currentMemberId = "kairyu";
+    let currentBgThemeId = "strawberry";
+    let selectedImages = createEmptySelection();
+
+    const memberSelect = document.getElementById("memberSelect");
+    const bgThemeSelect = document.getElementById("bgThemeSelect");
+    const themeList = document.getElementById("themeList");
+    const collageGrid = document.getElementById("collageGrid");
+    const resultTitle = document.getElementById("resultTitle");
+    const selectedByEl = document.getElementById("selectedBy");
+    const resultCard = document.getElementById("resultCard");
+    const resultKickerImage = document.getElementById("resultKickerImage");
+    const doodleHeartImage = document.getElementById("doodleHeartImage");
+    const labelImageMap = {
+      numa: document.getElementById("labelNuma"),
+      best: document.getElementById("labelBest"),
+      cute: document.getElementById("labelCute"),
+      cool: document.getElementById("labelCool"),
+      danger: document.getElementById("labelDanger"),
+      legend: document.getElementById("labelLegend")
+    };
+    const saveBtn = document.getElementById("saveBtn");
+    const statusEl = document.getElementById("status");
+
+    init();
+
+    function init() {
+      renderMemberSelect();
+      renderBackgroundThemeSelect();
+      renderThemeCards();
+      updateResult();
+      renderHandwrittenAssets();
+      memberSelect.addEventListener("change", (event) => {
+        currentMemberId = event.target.value;
+        selectedImages = createEmptySelection();
+        renderThemeCards();
+        updateResult();
+      });
+      bgThemeSelect.addEventListener("change", (event) => {
+        currentBgThemeId = event.target.value;
+        updateBackgroundTheme();
+      });
+      const userNameInput = document.getElementById("userNameInput");
+      userNameInput.addEventListener("input", () => updateResult());
+      saveBtn.addEventListener("click", saveResultImage);
+    }
+    function createEmptySelection() {
+      const empty = {};
+      themes.forEach((theme) => empty[theme.id] = null);
+      return empty;
+    }
+    function getCurrentMember() { return members.find((m) => m.id === currentMemberId) || members[0]; }
+    function renderMemberSelect() {
+      memberSelect.innerHTML = members.map((m) => `<option value="${m.id}">${m.name}</option>`).join("");
+      memberSelect.value = currentMemberId;
+    }
+    function renderBackgroundThemeSelect() {
+      bgThemeSelect.innerHTML = backgroundThemes.map((theme) => `<option value="${theme.id}">${theme.label}</option>`).join("");
+      bgThemeSelect.value = currentBgThemeId;
+      updateBackgroundTheme();
+    }
+    function updateBackgroundTheme() {
+      backgroundThemes.forEach((theme) => resultCard.classList.remove(`bg-${theme.id}`));
+      resultCard.classList.add(`bg-${currentBgThemeId}`);
+      renderHandwrittenAssets();
+    }
+    function renderHandwrittenAssets() {
+      const base = "assets/handwrite/white";
+
+      resultKickerImage.src = `${base}/my-favorite.png`;
+      doodleHeartImage.src = `${base}/heart.png`;
+
+      const assetMap = {
+        numa: "numa.png",
+        best: "current-best.png",
+        cute: "cute.png",
+        cool: "cool.png",
+        danger: "zurui.png", // 「ずるい」ラベル
+        legend: "legend.png"
+      };
+
+      Object.entries(assetMap).forEach(([themeId, filename]) => {
+        const el = labelImageMap[themeId];
+        if (el) el.src = `${base}/${filename}`;
+      });
+    }
+
+    function getImageAdjustStyle(selected) {
+      if (!selected || selected.type !== "upload") return "";
+      const posX = selected.posX !== undefined ? selected.posX : 50;
+      const posY = selected.posY !== undefined ? selected.posY : 20;
+      const scale = selected.scale !== undefined ? selected.scale : 100;
+      return `object-position: ${posX}% ${posY}%; transform: scale(${scale / 100});`;
+    }
+    function renderSelectedThumbHtml(theme, selected) {
+      if (!selected) return `未選択<br>${theme.label}`;
+      const style = getImageAdjustStyle(selected);
+      return `<img src="${selected.src}" alt="${theme.label} 選択中"${style ? ` style="${style}"` : ""}>`;
+    }
+    function updateSelectedThumb(themeId) {
+      const theme = themes.find((item) => item.id === themeId);
+      const thumb = document.querySelector(`[data-selected-thumb="${themeId}"]`);
+      if (!theme || !thumb) return;
+      thumb.innerHTML = renderSelectedThumbHtml(theme, selectedImages[themeId]);
+    }
+
+    function renderThemeCards() {
+      themeList.innerHTML = "";
+      themes.forEach((theme, index) => {
+        const selected = selectedImages[theme.id];
+        const card = document.createElement("article");
+        card.className = "theme-card";
+        card.dataset.themeId = theme.id;
+        card.innerHTML = `
+          <div class="theme-head"><div class="theme-number">${index + 1}</div><h3 class="theme-title">${theme.label}</h3></div>
+          <div class="selected-preview">
+            <div class="selected-thumb" data-selected-thumb="${theme.id}">${renderSelectedThumbHtml(theme, selected)}</div>
+            <div class="selected-text"><strong>${selected ? "選択中" : "まだ選ばれていません"}</strong><span>候補画像をタップするか、自分の画像をアップロードできます。</span></div>
+          </div>
+          <div class="photo-grid" data-photo-grid="${theme.id}"></div>
+          <div class="upload-row">
+            <label class="upload-label">画像をアップロード<input type="file" accept="image/*" data-upload="${theme.id}"></label>
+            <button class="clear-btn" type="button" data-clear="${theme.id}">このテーマをリセット</button>
+          </div>
+          <div class="position-slider-wrap${selected && selected.type === 'upload' ? ' is-visible' : ''}" data-slider-wrap="${theme.id}">
+            <div>
+              <label>左右位置を調整 <span data-slider-x-val="${theme.id}">${selected && selected.posX !== undefined ? selected.posX : 50}%</span></label>
+              <input type="range" min="0" max="100" value="${selected && selected.posX !== undefined ? selected.posX : 50}" data-slider-x="${theme.id}">
+            </div>
+            <div>
+              <label>上下位置を調整 <span data-slider-y-val="${theme.id}">${selected && selected.posY !== undefined ? selected.posY : 20}%</span></label>
+              <input type="range" min="0" max="100" value="${selected && selected.posY !== undefined ? selected.posY : 20}" data-slider-y="${theme.id}">
+            </div>
+            <div>
+              <label>拡大・縮小 <span data-slider-scale-val="${theme.id}">${selected && selected.scale !== undefined ? selected.scale : 100}%</span></label>
+              <input type="range" min="80" max="180" value="${selected && selected.scale !== undefined ? selected.scale : 100}" data-slider-scale="${theme.id}">
+            </div>
+          </div>`;
+        themeList.appendChild(card);
+        renderPhotoOptions(theme.id);
+        card.querySelector(`[data-upload="${theme.id}"]`).addEventListener("change", (event) => handleUpload(event, theme.id));
+        card.querySelector(`[data-clear="${theme.id}"]`).addEventListener("click", () => {
+          selectedImages[theme.id] = null;
+          renderThemeCards();
+          updateResult();
+        });
+        const sliderXEl = card.querySelector(`[data-slider-x="${theme.id}"]`);
+        const sliderYEl = card.querySelector(`[data-slider-y="${theme.id}"]`);
+        const sliderScaleEl = card.querySelector(`[data-slider-scale="${theme.id}"]`);
+        if (sliderXEl) {
+          sliderXEl.addEventListener("input", () => {
+            const val = Number(sliderXEl.value);
+            const valLabel = card.querySelector(`[data-slider-x-val="${theme.id}"]`);
+            if (valLabel) valLabel.textContent = val + "%";
+            if (selectedImages[theme.id]) {
+              selectedImages[theme.id].posX = val;
+              updateSelectedThumb(theme.id);
+              updateResult();
+            }
+          });
+        }
+        if (sliderYEl) {
+          sliderYEl.addEventListener("input", () => {
+            const val = Number(sliderYEl.value);
+            const valLabel = card.querySelector(`[data-slider-y-val="${theme.id}"]`);
+            if (valLabel) valLabel.textContent = val + "%";
+            if (selectedImages[theme.id]) {
+              selectedImages[theme.id].posY = val;
+              updateSelectedThumb(theme.id);
+              updateResult();
+            }
+          });
+        }
+        if (sliderScaleEl) {
+          sliderScaleEl.addEventListener("input", () => {
+            const val = Number(sliderScaleEl.value);
+            const valLabel = card.querySelector(`[data-slider-scale-val="${theme.id}"]`);
+            if (valLabel) valLabel.textContent = val + "%";
+            if (selectedImages[theme.id]) {
+              selectedImages[theme.id].scale = val;
+              updateSelectedThumb(theme.id);
+              updateResult();
+            }
+          });
+        }
+      });
+    }
+    function renderPhotoOptions(themeId) {
+      const grid = document.querySelector(`[data-photo-grid="${themeId}"]`);
+      if (!grid) return;
+      const selected = selectedImages[themeId];
+      grid.innerHTML = "";
+      const numbers = Array.from({ length: IMAGE_COUNT }, (_, index) => String(index + 1).padStart(2, "0"));
+      if (IMAGE_ORDER_DESCENDING) numbers.reverse();
+      numbers.forEach((number) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "photo-option";
+        if (selected && selected.src.includes(`/images/${currentMemberId}/${number}.`)) button.classList.add("is-selected");
+        const img = document.createElement("img");
+        img.src = `images/${currentMemberId}/${number}.jpg`;
+        img.alt = `${getCurrentMember().name} ${number}`;
+        img.loading = "lazy";
+        img.onerror = () => {
+          if (!img.dataset.fallbackTried) {
+            img.dataset.fallbackTried = "true";
+            img.src = `images/${currentMemberId}/${number}.png`;
+          } else {
+            button.style.display = "none";
+          }
+        };
+        button.appendChild(img);
+        button.addEventListener("click", () => {
+          selectedImages[themeId] = { src: img.currentSrc || img.src, type: "preset" };
+          renderThemeCards();
+          updateResult();
+        });
+        grid.appendChild(button);
+      });
+    }
+    function handleUpload(event, themeId) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) { setStatus("画像ファイルを選んでください。"); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        selectedImages[themeId] = { src: reader.result, type: "upload", posX: 50, posY: 20, scale: 100 };
+        renderThemeCards();
+        updateResult();
+      };
+      reader.readAsDataURL(file);
+    }
+    function updateResult() {
+      const member = getCurrentMember();
+      const userName = (document.getElementById("userNameInput").value.trim()) || "muze";
+      resultTitle.innerHTML = `${member.name}<br>VISUAL`;
+      selectedByEl.textContent = `selected by ${userName}`;
+      collageGrid.innerHTML = "";
+      themes.forEach((theme) => {
+        const item = document.createElement("div");
+        item.className = `collage-item item-${theme.id}`;
+        const selected = selectedImages[theme.id];
+        if (selected && selected.src) {
+          const img = document.createElement("img");
+          img.src = selected.src;
+          img.alt = theme.label;
+          if (selected.type === "upload") {
+            img.style.cssText += getImageAdjustStyle(selected);
+          }
+          item.appendChild(img);
+        } else {
+          const placeholder = document.createElement("div");
+          placeholder.className = "collage-placeholder";
+          placeholder.innerHTML = `${theme.label}<br>未選択`;
+          item.appendChild(placeholder);
+        }
+        collageGrid.appendChild(item);
+      });
+    }
+    async function saveResultImage() {
+      setStatus("画像を作成中...");
+      const member = getCurrentMember();
+      try {
+        resultCard.classList.add("exporting");
+        await wait(120);
+        const canvas = await renderElementToCanvas(resultCard, 1200, 1200);
+        resultCard.classList.remove("exporting");
+        const blob = await canvasToBlob(canvas);
+        const fileName = `oshi-visual-6-${member.id}.png`;
+        if (navigator.canShare && navigator.share) {
+          const file = new File([blob], fileName, { type: "image/png" });
+          if (navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: "推しビジュ6選", text: "推しビジュ6選を作ったよ" });
+              setStatus("画像を共有できます。");
+              return;
+            } catch (shareError) {}
+          }
+        }
+        downloadBlob(blob, fileName);
+        setStatus("画像を保存しました。");
+      } catch (error) {
+        console.error(error);
+        resultCard.classList.remove("exporting");
+        setStatus("画像の保存に失敗しました。スクショ保存も試してみてください。");
+      }
+    }
+    async function renderElementToCanvas(element, width, height) {
+      const clone = element.cloneNode(true);
+      await inlineImagesForExport(element, clone);
+
+      const styles = Array.from(document.styleSheets).map((sheet) => {
+        try {
+          return Array.from(sheet.cssRules).map((rule) => rule.cssText).join("\n");
+        } catch (error) {
+          return "";
+        }
+      }).join("\n");
+
+      const serialized = new XMLSerializer().serializeToString(clone);
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+          <foreignObject width="100%" height="100%">
+            <div xmlns="http://www.w3.org/1999/xhtml">
+              <style>${styles}</style>
+              ${serialized}
+            </div>
+          </foreignObject>
+        </svg>`;
+
+      const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      try {
+        const image = await loadImageForExport(svgUrl);
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0, width, height);
+        return canvas;
+      } finally {
+        URL.revokeObjectURL(svgUrl);
+      }
+    }
+    async function inlineImagesForExport(original, clone) {
+      const originalImages = Array.from(original.querySelectorAll("img"));
+      const cloneImages = Array.from(clone.querySelectorAll("img"));
+      for (let i = 0; i < originalImages.length; i++) {
+        const dataUrl = imageElementToDataURL(originalImages[i]);
+        if (dataUrl && cloneImages[i]) cloneImages[i].src = dataUrl;
+      }
+    }
+    function imageElementToDataURL(img) {
+      try {
+        if (!img.complete || !img.naturalWidth || !img.naturalHeight) return img.src;
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const context = canvas.getContext("2d");
+        context.drawImage(img, 0, 0);
+        return canvas.toDataURL("image/png");
+      } catch (error) {
+        return img.src;
+      }
+    }
+    function loadImageForExport(src) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+      });
+    }
+    function canvasToBlob(canvas) {
+      return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")), "image/png", 0.95));
+    }
+    function downloadBlob(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+    function setStatus(message) {
+      statusEl.textContent = message;
+      if (!message) return;
+      window.clearTimeout(setStatus.timer);
+      setStatus.timer = window.setTimeout(() => statusEl.textContent = "", 3500);
+    }
+    function wait(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
+  </script>
+</body>
+</html>
