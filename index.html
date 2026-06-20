@@ -946,9 +946,9 @@
 
       // 画像グリッド
       const gridX = 26;
-      const gridY = 250;
+      const gridY = 290;
       const gridW = 1148;
-      const gridH = 738;
+      const gridH = 700;
       const itemW = gridW / 3;
       const itemH = gridH / 2;
       const imagePromises = themes.map((theme) => {
@@ -974,15 +974,15 @@
       });
 
       // 手書きラベル。CSSの%位置に合わせて固定値化。
-      drawRotatedImage(ctx, numa, 0.048 * W, 0.505 * H, 0.14 * W, -6);
-      drawRotatedImage(ctx, best, 0.408 * W, 0.500 * H, 0.17 * W, 3);
-      drawRotatedImage(ctx, cute, W - 0.073 * W - 0.13 * W, 0.505 * H, 0.13 * W, -4);
-      drawRotatedImage(ctx, cool, 0.070 * W, 0.790 * H, 0.13 * W, 4);
-      drawRotatedImage(ctx, danger, 0.410 * W, 0.780 * H, 0.18 * W, -3);
-      drawRotatedImage(ctx, legend, W - 0.077 * W - 0.13 * W, 0.780 * H, 0.13 * W, 3);
+      drawRotatedImage(ctx, numa, 0.048 * W, gridY + itemH - 28, 0.14 * W, -6);
+      drawRotatedImage(ctx, best, 0.408 * W, gridY + itemH - 34, 0.17 * W, 3);
+      drawRotatedImage(ctx, cute, W - 0.073 * W - 0.13 * W, gridY + itemH - 28, 0.13 * W, -4);
+      drawRotatedImage(ctx, cool, 0.070 * W, gridY + gridH - 42, 0.13 * W, 4);
+      drawRotatedImage(ctx, danger, 0.410 * W, gridY + gridH - 48, 0.18 * W, -3);
+      drawRotatedImage(ctx, legend, W - 0.077 * W - 0.13 * W, gridY + gridH - 42, 0.13 * W, 3);
       if (heart) {
         ctx.globalAlpha = 0.45;
-        drawRotatedImage(ctx, heart, 60, 216, 44, -14);
+        drawRotatedImage(ctx, heart, 60, 246, 44, -14);
         ctx.globalAlpha = 1;
       }
 
@@ -992,7 +992,7 @@
       ctx.font = "900 18px system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif";
       ctx.textAlign = "right";
       ctx.textBaseline = "top";
-      ctx.fillText(`selected by ${userName}`.toLowerCase(), 1148, 1016);
+      ctx.fillText(`selected by ${userName}`.toLowerCase(), 1148, 1024);
       ctx.restore();
 
       return canvas;
