@@ -8,6 +8,7 @@
   <meta property="og:title" content="推しビジュ6選" />
   <meta property="og:description" content="6つのテーマで選ぶだけ。推しの好きなビジュを、可愛く1枚に。" />
   <meta property="og:type" content="website" />
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     :root {
       --main: #ff77ad;
@@ -240,6 +241,69 @@
     .note { margin: 0; color: var(--soft); font-size: 11px; line-height: 1.6; text-align: center; font-weight: 700; }
     .status { min-height: 1.4em; margin-top: 8px; color: var(--main-dark); font-size: 12px; font-weight: 900; text-align: center; }
 
+
+
+    /* 候補写真モーダル（5選UIの挙動を移植） */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(53, 37, 47, 0.48);
+      display: none;
+      align-items: flex-end;
+      z-index: 1000;
+    }
+    .modal.active { display: flex; }
+    .modal-inner {
+      width: 100%;
+      max-height: 88vh;
+      overflow: auto;
+      background:
+        radial-gradient(circle at 14% 0%, #ffe1ef 0, transparent 26%),
+        #fff;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 16px 28px;
+      box-shadow: 0 -18px 48px rgba(53, 37, 47, 0.18);
+    }
+    .modal-content { max-width: 720px; margin: 0 auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .modal-title { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+    .close-button {
+      border: none;
+      background: #fff0f7;
+      color: var(--main-dark);
+      border-radius: 999px;
+      width: 38px;
+      height: 38px;
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .modal .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      max-height: none;
+      overflow: visible;
+      margin-bottom: 16px;
+      padding: 2px 2px 8px;
+    }
+    .theme-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .small-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--main-dark);
+      padding: 10px 13px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(216, 78, 136, 0.10);
+    }
+    .small-button.primary { border: none; background: var(--ink); color: #fff; }
+    input[type="file"] { display: none; }
+    .modal-note { margin: 0; color: var(--soft); font-size: 11px; line-height: 1.7; font-weight: 700; text-align: center; }
+
     @media (min-width: 900px) {
       .page { padding: 34px 24px 64px; }
       .hero { padding: 36px 34px 30px; }
@@ -320,6 +384,23 @@
     </div>
   </main>
 
+  <div id="photoModal" class="modal">
+    <div class="modal-inner">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div id="modalTitle" class="modal-title">写真を選ぶ</div>
+          <button class="close-button" type="button" aria-label="閉じる">×</button>
+        </div>
+        <div id="modalPhotoGrid" class="photo-grid"></div>
+        <button id="modalUploadBtn" class="small-button" type="button">画像をアップロード</button>
+        <p class="modal-note">候補にない写真は、自分の画像をアップロードできます。</p>
+      </div>
+    </div>
+  </div>
+
+  <input id="uploadInput" type="file" accept="image/*">
+
+
   <script>
     const members = [
       { id: "kairyu", name: "KAIRYU" },
@@ -331,6 +412,7 @@
       { id: "hayato", name: "HAYATO" },
       { id: "eiki", name: "EIKI" }
     ];
+
     const themes = [
       { id: "numa", label: "沼落ちビジュ" },
       { id: "best", label: "今の最愛ビジュ" },
@@ -339,30 +421,19 @@
       { id: "danger", label: "ずるい" },
       { id: "legend", label: "殿堂入り" }
     ];
-    /*
-      手書きPNG素材の置き場所
-      ------------------------------------------------------------
-      assets/handwrite/white/
-        my-favorite.png
-        numa.png
-        current-best.png
-        cute.png
-        cool.png
-        danger.png
-        legend.png
-        heart.png
 
-      テーマ文言を変える場合は、PNG素材名と assetMap を合わせて変更してください。
-    */
     const backgroundThemes = [
       { id: "strawberry", label: "ベリー" },
       { id: "soda", label: "ソーダ" },
       { id: "classic", label: "クラシカル" }
     ];
+
     const IMAGE_COUNT = 20;
-    const IMAGE_ORDER_DESCENDING = true; // true=降順（新しい順）, false=昇順（古い順）
+    const IMAGE_ORDER_DESCENDING = true;
+
     let currentMemberId = "kairyu";
     let currentBgThemeId = "strawberry";
+    let currentThemeId = null;
     let selectedImages = createEmptySelection();
 
     const memberSelect = document.getElementById("memberSelect");
@@ -374,6 +445,15 @@
     const resultCard = document.getElementById("resultCard");
     const resultKickerImage = document.getElementById("resultKickerImage");
     const doodleHeartImage = document.getElementById("doodleHeartImage");
+    const saveBtn = document.getElementById("saveBtn");
+    const statusEl = document.getElementById("status");
+    const photoModal = document.getElementById("photoModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalPhotoGrid = document.getElementById("modalPhotoGrid");
+    const uploadInput = document.getElementById("uploadInput");
+    const modalUploadBtn = document.getElementById("modalUploadBtn");
+    const closeButton = document.querySelector(".close-button");
+
     const labelImageMap = {
       numa: document.getElementById("labelNuma"),
       best: document.getElementById("labelBest"),
@@ -382,8 +462,6 @@
       danger: document.getElementById("labelDanger"),
       legend: document.getElementById("labelLegend")
     };
-    const saveBtn = document.getElementById("saveBtn");
-    const statusEl = document.getElementById("status");
 
     init();
 
@@ -393,43 +471,60 @@
       renderThemeCards();
       updateResult();
       renderHandwrittenAssets();
+
       memberSelect.addEventListener("change", (event) => {
         currentMemberId = event.target.value;
+        currentThemeId = null;
         selectedImages = createEmptySelection();
         renderThemeCards();
         updateResult();
       });
+
       bgThemeSelect.addEventListener("change", (event) => {
         currentBgThemeId = event.target.value;
         updateBackgroundTheme();
       });
-      const userNameInput = document.getElementById("userNameInput");
-      userNameInput.addEventListener("input", () => updateResult());
+
+      document.getElementById("userNameInput").addEventListener("input", updateResult);
       saveBtn.addEventListener("click", saveResultImage);
+      modalUploadBtn.addEventListener("click", triggerUpload);
+      uploadInput.addEventListener("change", handleUploadFromInput);
+      closeButton.addEventListener("click", closeModal);
+
+      photoModal.addEventListener("click", (event) => {
+        if (event.target === photoModal) closeModal();
+      });
     }
+
     function createEmptySelection() {
       const empty = {};
       themes.forEach((theme) => empty[theme.id] = null);
       return empty;
     }
-    function getCurrentMember() { return members.find((m) => m.id === currentMemberId) || members[0]; }
+
+    function getCurrentMember() {
+      return members.find((m) => m.id === currentMemberId) || members[0];
+    }
+
     function renderMemberSelect() {
       memberSelect.innerHTML = members.map((m) => `<option value="${m.id}">${m.name}</option>`).join("");
       memberSelect.value = currentMemberId;
     }
+
     function renderBackgroundThemeSelect() {
       bgThemeSelect.innerHTML = backgroundThemes.map((theme) => `<option value="${theme.id}">${theme.label}</option>`).join("");
       bgThemeSelect.value = currentBgThemeId;
       updateBackgroundTheme();
     }
+
     function updateBackgroundTheme() {
       backgroundThemes.forEach((theme) => resultCard.classList.remove(`bg-${theme.id}`));
       resultCard.classList.add(`bg-${currentBgThemeId}`);
       renderHandwrittenAssets();
     }
+
     function renderHandwrittenAssets() {
       const base = "assets/handwrite/white";
-
       resultKickerImage.src = `${base}/my-favorite.png`;
       doodleHeartImage.src = `${base}/heart.png`;
 
@@ -438,7 +533,7 @@
         best: "current-best.png",
         cute: "cute.png",
         cool: "cool.png",
-        danger: "zurui.png", // 「ずるい」ラベル
+        danger: "zurui.png",
         legend: "legend.png"
       };
 
@@ -455,11 +550,13 @@
       const scale = selected.scale !== undefined ? selected.scale : 100;
       return `object-position: ${posX}% ${posY}%; transform: scale(${scale / 100});`;
     }
+
     function renderSelectedThumbHtml(theme, selected) {
       if (!selected) return `未選択<br>${theme.label}`;
       const style = getImageAdjustStyle(selected);
       return `<img src="${selected.src}" alt="${theme.label} 選択中"${style ? ` style="${style}"` : ""}>`;
     }
+
     function updateSelectedThumb(themeId) {
       const theme = themes.find((item) => item.id === themeId);
       const thumb = document.querySelector(`[data-selected-thumb="${themeId}"]`);
@@ -469,23 +566,25 @@
 
     function renderThemeCards() {
       themeList.innerHTML = "";
+
       themes.forEach((theme, index) => {
         const selected = selectedImages[theme.id];
         const card = document.createElement("article");
         card.className = "theme-card";
         card.dataset.themeId = theme.id;
+
         card.innerHTML = `
           <div class="theme-head"><div class="theme-number">${index + 1}</div><h3 class="theme-title">${theme.label}</h3></div>
           <div class="selected-preview">
             <div class="selected-thumb" data-selected-thumb="${theme.id}">${renderSelectedThumbHtml(theme, selected)}</div>
-            <div class="selected-text"><strong>${selected ? "選択中" : "まだ選ばれていません"}</strong><span>候補画像をタップするか、自分の画像をアップロードできます。</span></div>
+            <div class="selected-text"><strong>${selected ? "選択中" : "まだ選ばれていません"}</strong><span>候補から選ぶか、自分の画像をアップロードできます。</span></div>
           </div>
-          <div class="photo-grid" data-photo-grid="${theme.id}"></div>
-          <div class="upload-row">
-            <label class="upload-label">画像をアップロード<input type="file" accept="image/*" data-upload="${theme.id}"></label>
-            <button class="clear-btn" type="button" data-clear="${theme.id}">このテーマをリセット</button>
+          <div class="theme-actions">
+            <button class="small-button primary" type="button" data-open-modal="${theme.id}">候補から選ぶ</button>
+            <button class="small-button" type="button" data-open-upload="${theme.id}">画像をアップロード</button>
+            <button class="clear-btn" type="button" data-clear="${theme.id}">リセット</button>
           </div>
-          <div class="position-slider-wrap${selected && selected.type === 'upload' ? ' is-visible' : ''}" data-slider-wrap="${theme.id}">
+          <div class="position-slider-wrap${selected && selected.type === "upload" ? " is-visible" : ""}" data-slider-wrap="${theme.id}">
             <div>
               <label>左右位置を調整 <span data-slider-x-val="${theme.id}">${selected && selected.posX !== undefined ? selected.posX : 50}%</span></label>
               <input type="range" min="0" max="100" value="${selected && selected.posX !== undefined ? selected.posX : 50}" data-slider-x="${theme.id}">
@@ -499,71 +598,95 @@
               <input type="range" min="80" max="180" value="${selected && selected.scale !== undefined ? selected.scale : 100}" data-slider-scale="${theme.id}">
             </div>
           </div>`;
+
         themeList.appendChild(card);
-        renderPhotoOptions(theme.id);
-        card.querySelector(`[data-upload="${theme.id}"]`).addEventListener("change", (event) => handleUpload(event, theme.id));
+
+        card.querySelector(`[data-open-modal="${theme.id}"]`).addEventListener("click", () => openModal(theme.id));
+        card.querySelector(`[data-open-upload="${theme.id}"]`).addEventListener("click", () => openUploadForTheme(theme.id));
         card.querySelector(`[data-clear="${theme.id}"]`).addEventListener("click", () => {
           selectedImages[theme.id] = null;
           renderThemeCards();
           updateResult();
         });
-        const sliderXEl = card.querySelector(`[data-slider-x="${theme.id}"]`);
-        const sliderYEl = card.querySelector(`[data-slider-y="${theme.id}"]`);
-        const sliderScaleEl = card.querySelector(`[data-slider-scale="${theme.id}"]`);
-        if (sliderXEl) {
-          sliderXEl.addEventListener("input", () => {
-            const val = Number(sliderXEl.value);
-            const valLabel = card.querySelector(`[data-slider-x-val="${theme.id}"]`);
-            if (valLabel) valLabel.textContent = val + "%";
-            if (selectedImages[theme.id]) {
-              selectedImages[theme.id].posX = val;
-              updateSelectedThumb(theme.id);
-              updateResult();
-            }
-          });
-        }
-        if (sliderYEl) {
-          sliderYEl.addEventListener("input", () => {
-            const val = Number(sliderYEl.value);
-            const valLabel = card.querySelector(`[data-slider-y-val="${theme.id}"]`);
-            if (valLabel) valLabel.textContent = val + "%";
-            if (selectedImages[theme.id]) {
-              selectedImages[theme.id].posY = val;
-              updateSelectedThumb(theme.id);
-              updateResult();
-            }
-          });
-        }
-        if (sliderScaleEl) {
-          sliderScaleEl.addEventListener("input", () => {
-            const val = Number(sliderScaleEl.value);
-            const valLabel = card.querySelector(`[data-slider-scale-val="${theme.id}"]`);
-            if (valLabel) valLabel.textContent = val + "%";
-            if (selectedImages[theme.id]) {
-              selectedImages[theme.id].scale = val;
-              updateSelectedThumb(theme.id);
-              updateResult();
-            }
-          });
-        }
+
+        setupAdjustSliders(card, theme.id);
       });
     }
-    function renderPhotoOptions(themeId) {
-      const grid = document.querySelector(`[data-photo-grid="${themeId}"]`);
-      if (!grid) return;
-      const selected = selectedImages[themeId];
-      grid.innerHTML = "";
+
+    function setupAdjustSliders(card, themeId) {
+      const sliderXEl = card.querySelector(`[data-slider-x="${themeId}"]`);
+      const sliderYEl = card.querySelector(`[data-slider-y="${themeId}"]`);
+      const sliderScaleEl = card.querySelector(`[data-slider-scale="${themeId}"]`);
+
+      if (sliderXEl) {
+        sliderXEl.addEventListener("input", () => {
+          const val = Number(sliderXEl.value);
+          const valLabel = card.querySelector(`[data-slider-x-val="${themeId}"]`);
+          if (valLabel) valLabel.textContent = val + "%";
+          if (selectedImages[themeId]) {
+            selectedImages[themeId].posX = val;
+            updateSelectedThumb(themeId);
+            updateResult();
+          }
+        });
+      }
+
+      if (sliderYEl) {
+        sliderYEl.addEventListener("input", () => {
+          const val = Number(sliderYEl.value);
+          const valLabel = card.querySelector(`[data-slider-y-val="${themeId}"]`);
+          if (valLabel) valLabel.textContent = val + "%";
+          if (selectedImages[themeId]) {
+            selectedImages[themeId].posY = val;
+            updateSelectedThumb(themeId);
+            updateResult();
+          }
+        });
+      }
+
+      if (sliderScaleEl) {
+        sliderScaleEl.addEventListener("input", () => {
+          const val = Number(sliderScaleEl.value);
+          const valLabel = card.querySelector(`[data-slider-scale-val="${themeId}"]`);
+          if (valLabel) valLabel.textContent = val + "%";
+          if (selectedImages[themeId]) {
+            selectedImages[themeId].scale = val;
+            updateSelectedThumb(themeId);
+            updateResult();
+          }
+        });
+      }
+    }
+
+    function openModal(themeId) {
+      currentThemeId = themeId;
+      const theme = themes.find((item) => item.id === themeId);
+      modalTitle.textContent = `${theme.label}を選ぶ`;
+      renderModalPhotoGrid();
+      photoModal.classList.add("active");
+    }
+
+    function closeModal() {
+      photoModal.classList.remove("active");
+    }
+
+    function renderModalPhotoGrid() {
+      if (!currentThemeId) return;
+      modalPhotoGrid.innerHTML = "";
+      const selected = selectedImages[currentThemeId];
       const numbers = Array.from({ length: IMAGE_COUNT }, (_, index) => String(index + 1).padStart(2, "0"));
       if (IMAGE_ORDER_DESCENDING) numbers.reverse();
+
       numbers.forEach((number) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "photo-option";
-        if (selected && selected.src.includes(`/images/${currentMemberId}/${number}.`)) button.classList.add("is-selected");
+
         const img = document.createElement("img");
         img.src = `images/${currentMemberId}/${number}.jpg`;
         img.alt = `${getCurrentMember().name} ${number}`;
         img.loading = "lazy";
+
         img.onerror = () => {
           if (!img.dataset.fallbackTried) {
             img.dataset.fallbackTried = "true";
@@ -572,44 +695,79 @@
             button.style.display = "none";
           }
         };
+
+        if (selected && selected.src.includes(`/images/${currentMemberId}/${number}.`)) {
+          button.classList.add("is-selected");
+        }
+
         button.appendChild(img);
         button.addEventListener("click", () => {
-          selectedImages[themeId] = { src: img.currentSrc || img.src, type: "preset" };
+          selectedImages[currentThemeId] = {
+            src: img.currentSrc || img.src,
+            type: "preset"
+          };
           renderThemeCards();
           updateResult();
+          closeModal();
         });
-        grid.appendChild(button);
+
+        modalPhotoGrid.appendChild(button);
       });
     }
-    function handleUpload(event, themeId) {
+
+    function openUploadForTheme(themeId) {
+      currentThemeId = themeId;
+      uploadInput.click();
+    }
+
+    function triggerUpload() {
+      uploadInput.click();
+    }
+
+    function handleUploadFromInput(event) {
       const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      if (!file.type.startsWith("image/")) { setStatus("画像ファイルを選んでください。"); return; }
+      if (!file || !currentThemeId) return;
+
+      if (!file.type.startsWith("image/")) {
+        setStatus("画像ファイルを選んでください。");
+        uploadInput.value = "";
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
-        selectedImages[themeId] = { src: reader.result, type: "upload", posX: 50, posY: 20, scale: 100 };
+        selectedImages[currentThemeId] = {
+          src: reader.result,
+          type: "upload",
+          posX: 50,
+          posY: 20,
+          scale: 100
+        };
         renderThemeCards();
         updateResult();
+        closeModal();
+        uploadInput.value = "";
       };
       reader.readAsDataURL(file);
     }
+
     function updateResult() {
       const member = getCurrentMember();
-      const userName = (document.getElementById("userNameInput").value.trim()) || "muze";
+      const userName = document.getElementById("userNameInput").value.trim() || "muze";
       resultTitle.innerHTML = `${member.name}<br>VISUAL`;
       selectedByEl.textContent = `selected by ${userName}`;
       collageGrid.innerHTML = "";
+
       themes.forEach((theme) => {
         const item = document.createElement("div");
         item.className = `collage-item item-${theme.id}`;
         const selected = selectedImages[theme.id];
+
         if (selected && selected.src) {
           const img = document.createElement("img");
           img.src = selected.src;
           img.alt = theme.label;
-          if (selected.type === "upload") {
-            img.style.cssText += getImageAdjustStyle(selected);
-          }
+          if (selected.type === "upload") img.style.cssText += getImageAdjustStyle(selected);
           item.appendChild(img);
         } else {
           const placeholder = document.createElement("div");
@@ -617,123 +775,93 @@
           placeholder.innerHTML = `${theme.label}<br>未選択`;
           item.appendChild(placeholder);
         }
+
         collageGrid.appendChild(item);
       });
     }
+
+    function canvasToBlob(canvas) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Blob creation failed"));
+        }, "image/png");
+      });
+    }
+
     async function saveResultImage() {
-      setStatus("画像を作成中...");
       const member = getCurrentMember();
+      const originalText = saveBtn.textContent;
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "画像を作成中...";
+      setStatus("画像を作成中...");
+
       try {
         resultCard.classList.add("exporting");
-        await wait(120);
-        const canvas = await renderElementToCanvas(resultCard, 1200, 1200);
+
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        await wait(150);
+
+        if (typeof html2canvas !== "function") {
+          throw new Error("html2canvas is not loaded");
+        }
+
+        const canvas = await html2canvas(resultCard, {
+          backgroundColor: null,
+          scale: 1,
+          useCORS: true,
+          allowTaint: true,
+          logging: false
+        });
+
         resultCard.classList.remove("exporting");
+
         const blob = await canvasToBlob(canvas);
         const fileName = `oshi-visual-6-${member.id}.png`;
-        if (navigator.canShare && navigator.share) {
-          const file = new File([blob], fileName, { type: "image/png" });
-          if (navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({ files: [file], title: "推しビジュ6選", text: "推しビジュ6選を作ったよ" });
-              setStatus("画像を共有できます。");
-              return;
-            } catch (shareError) {}
-          }
+        const file = new File([blob], fileName, { type: "image/png" });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: "推しビジュ6選",
+            text: "推しビジュ6選を作ったよ",
+            files: [file]
+          });
+          setStatus("共有シートを開きました。");
+          return;
         }
-        downloadBlob(blob, fileName);
+
+        downloadCanvas(canvas, fileName);
         setStatus("画像を保存しました。");
       } catch (error) {
         console.error(error);
         resultCard.classList.remove("exporting");
-        setStatus("画像の保存に失敗しました。スクショ保存も試してみてください。");
-      }
-    }
-    async function renderElementToCanvas(element, width, height) {
-      const clone = element.cloneNode(true);
-      await inlineImagesForExport(element, clone);
-
-      const styles = Array.from(document.styleSheets).map((sheet) => {
-        try {
-          return Array.from(sheet.cssRules).map((rule) => rule.cssText).join("\n");
-        } catch (error) {
-          return "";
-        }
-      }).join("\n");
-
-      const serialized = new XMLSerializer().serializeToString(clone);
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-          <foreignObject width="100%" height="100%">
-            <div xmlns="http://www.w3.org/1999/xhtml">
-              <style>${styles}</style>
-              ${serialized}
-            </div>
-          </foreignObject>
-        </svg>`;
-
-      const svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-      const svgUrl = URL.createObjectURL(svgBlob);
-      try {
-        const image = await loadImageForExport(svgUrl);
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d");
-        context.drawImage(image, 0, 0, width, height);
-        return canvas;
+        setStatus(error.name === "AbortError" ? "共有をキャンセルしました。" : "画像の作成に失敗しました。");
       } finally {
-        URL.revokeObjectURL(svgUrl);
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
       }
     }
-    async function inlineImagesForExport(original, clone) {
-      const originalImages = Array.from(original.querySelectorAll("img"));
-      const cloneImages = Array.from(clone.querySelectorAll("img"));
-      for (let i = 0; i < originalImages.length; i++) {
-        const dataUrl = imageElementToDataURL(originalImages[i]);
-        if (dataUrl && cloneImages[i]) cloneImages[i].src = dataUrl;
-      }
+
+    function downloadCanvas(canvas, fileName) {
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
-    function imageElementToDataURL(img) {
-      try {
-        if (!img.complete || !img.naturalWidth || !img.naturalHeight) return img.src;
-        const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const context = canvas.getContext("2d");
-        context.drawImage(img, 0, 0);
-        return canvas.toDataURL("image/png");
-      } catch (error) {
-        return img.src;
-      }
-    }
-    function loadImageForExport(src) {
-      return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = src;
-      });
-    }
-    function canvasToBlob(canvas) {
-      return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")), "image/png", 0.95));
-    }
-    function downloadBlob(blob, fileName) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
+
     function setStatus(message) {
       statusEl.textContent = message;
       if (!message) return;
       window.clearTimeout(setStatus.timer);
       setStatus.timer = window.setTimeout(() => statusEl.textContent = "", 3500);
     }
-    function wait(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
+
+    function wait(ms) {
+      return new Promise((resolve) => window.setTimeout(resolve, ms));
+    }
   </script>
 </body>
 </html>
