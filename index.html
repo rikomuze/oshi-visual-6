@@ -240,6 +240,20 @@
     .save-btn { width: 100%; padding: 15px 18px; background: linear-gradient(135deg, var(--main), #ff9fc6); color: #fff; font-size: 15px; box-shadow: 0 12px 28px rgba(232,77,141,.25); }
     .note { margin: 0; color: var(--soft); font-size: 11px; line-height: 1.6; text-align: center; font-weight: 700; }
     .status { min-height: 1.4em; margin-top: 8px; color: var(--main-dark); font-size: 12px; font-weight: 900; text-align: center; }
+    /* 保存時はhtml2canvasが苦手なブレンド・疑似要素を止める。レイアウトサイズは変えない */
+    .result-card.exporting { box-shadow: none !important; }
+    .result-card.exporting::before,
+    .result-card.exporting .collage-item::before {
+      display: none !important;
+      content: none !important;
+      background: none !important;
+      mix-blend-mode: normal !important;
+    }
+    .result-card.exporting * {
+      filter: none !important;
+      mix-blend-mode: normal !important;
+    }
+
 
 
 
@@ -789,6 +803,30 @@
       });
     }
 
+    async function waitForImagesInElement(element, timeoutMs = 8000) {
+      const images = Array.from(element.querySelectorAll("img"));
+      const waits = images.map((img) => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise((resolve) => {
+          const done = () => resolve();
+          img.addEventListener("load", done, { once: true });
+          img.addEventListener("error", done, { once: true });
+        });
+      });
+
+      await Promise.race([
+        Promise.all(waits),
+        wait(timeoutMs)
+      ]);
+    }
+
+    function withTimeout(promise, ms, message) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => window.setTimeout(() => reject(new Error(message)), ms))
+      ]);
+    }
+
     async function saveResultImage() {
       const member = getCurrentMember();
       const originalText = saveBtn.textContent;
@@ -798,47 +836,73 @@
       setStatus("画像を作成中...");
 
       try {
-        if (document.fonts && document.fonts.ready) await document.fonts.ready;
-        await wait(150);
-
         if (typeof html2canvas !== "function") {
           throw new Error("html2canvas is not loaded");
         }
 
-        // プレビューと保存画像のズレを防ぐため、保存時にレイアウトサイズを変えない。
-        // 代わりにscaleだけ上げて、見た目はそのまま高解像度化する。
+        if (document.fonts && document.fonts.ready) {
+          await withTimeout(document.fonts.ready, 3000, "Font loading timeout").catch(() => null);
+        }
+
+        await waitForImagesInElement(resultCard, 8000);
+        await wait(100);
+
+        // 重要：保存時もプレビューと同じサイズのまま撮る。
+        // ただしhtml2canvasが苦手なmix-blend-modeや疑似要素だけ一時的に止める。
+        resultCard.classList.add("exporting");
+
         const rect = resultCard.getBoundingClientRect();
-        const captureScale = Math.max(2, Math.min(4, 1200 / rect.width));
+        const captureScale = Math.max(2, Math.min(3, 1200 / Math.max(rect.width, 1)));
 
-        const canvas = await html2canvas(resultCard, {
-          backgroundColor: null,
-          scale: captureScale,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          imageTimeout: 15000
-        });
+        const canvas = await withTimeout(
+          html2canvas(resultCard, {
+            backgroundColor: null,
+            scale: captureScale,
+            useCORS: true,
+            allowTaint: false,
+            logging: false,
+            imageTimeout: 8000,
+            removeContainer: true,
+            onclone: (doc) => {
+              const clonedCard = doc.getElementById("resultCard");
+              if (clonedCard) clonedCard.classList.add("exporting");
+            }
+          }),
+          20000,
+          "Capture timeout"
+        );
 
-        const blob = await canvasToBlob(canvas);
+        resultCard.classList.remove("exporting");
+
         const fileName = `oshi-visual-6-${member.id}.png`;
+        const blob = await canvasToBlob(canvas);
         const file = new File([blob], fileName, { type: "image/png" });
 
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: "推しビジュ6選",
-            text: "推しビジュ6選を作ったよ",
-            files: [file]
-          });
-          setStatus("共有シートを開きました。");
-          return;
+          try {
+            await navigator.share({
+              title: "推しビジュ6選",
+              text: "推しビジュ6選を作ったよ",
+              files: [file]
+            });
+            setStatus("共有シートを開きました。");
+            return;
+          } catch (shareError) {
+            if (shareError && shareError.name === "AbortError") {
+              setStatus("共有をキャンセルしました。");
+              return;
+            }
+            // 共有に失敗した場合は保存へフォールバック
+          }
         }
 
         downloadCanvas(canvas, fileName);
         setStatus("画像を保存しました。");
       } catch (error) {
         console.error(error);
-        setStatus(error.name === "AbortError" ? "共有をキャンセルしました。" : "画像の作成に失敗しました。");
+        setStatus("画像の作成に失敗しました。ブラウザで開き直して再試行してください。");
       } finally {
+        resultCard.classList.remove("exporting");
         saveBtn.disabled = false;
         saveBtn.textContent = originalText;
       }
