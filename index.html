@@ -222,14 +222,14 @@
     .hand-label-image { position: absolute; z-index: 6; display: block; height: auto; }
 
     /* 文字が大きすぎて下が切れないように、かなり小さく調整 */
-    .label-numa { left: 4.8%; top: 50.5%; width: 14%; transform: rotate(-6deg); }
-    .label-best { left: 40.8%; top: 50%; width: 17%; transform: rotate(3deg); }
-    .label-cute { right: 7.3%; top: 50.5%; width: 13%; transform: rotate(-4deg); }
+    .label-numa { left: 4.8%; top: 51.4%; width: 14%; transform: rotate(-6deg); }
+    .label-best { left: 40.8%; top: 51.0%; width: 17%; transform: rotate(3deg); }
+    .label-cute { right: 7.3%; top: 51.4%; width: 13%; transform: rotate(-4deg); }
 
     /* 下段はさらに上へ移動して、カード下で切れないようにする */
-    .label-cool { left: 7.0%; top: 79%; width: 13%; transform: rotate(4deg); }
-    .label-danger { left: 41.0%; top: 78%; width: 18%; transform: rotate(-3deg); }
-    .label-legend { right: 7.7%; top: 78%; width: 13%; transform: rotate(3deg); }
+    .label-cool { left: 7.0%; top: 80.4%; width: 13%; transform: rotate(4deg); }
+    .label-danger { left: 41.0%; top: 79.4%; width: 18%; transform: rotate(-3deg); }
+    .label-legend { right: 7.7%; top: 79.4%; width: 13%; transform: rotate(3deg); }
     .result-card.exporting .label-numa, .result-card.exporting .label-best, .result-card.exporting .label-cute, .result-card.exporting .label-cool, .result-card.exporting .label-danger, .result-card.exporting .label-legend { filter: none; }
     .doodle-image { position: absolute; z-index: 7; display: block; opacity: .45; pointer-events: none; }
     .doodle.one { left: 5%; top: 18%; width: 26px; transform: rotate(-14deg); }
@@ -978,7 +978,7 @@
       // 手書きラベル。各写真セルの下端に「乗る」ように、セル基準で配置。
       // x: セル内の左位置 / y: セル下端から少し上 / width: セル幅に対するサイズ
       const labelYTop = gridY + itemH - 34;
-      const labelYBottom = gridY + gridH - 42;
+      const labelYBottom = gridY + gridH - 56;
       drawRotatedImage(ctx, numa,   gridX + itemW * 0 + 34, labelYTop,    itemW * 0.42, -6);
       drawRotatedImage(ctx, best,   gridX + itemW * 1 + 82, labelYTop - 6,itemW * 0.50,  3);
       drawRotatedImage(ctx, cute,   gridX + itemW * 2 + 176,labelYTop - 2,itemW * 0.40, -4);
