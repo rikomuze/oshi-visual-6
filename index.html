@@ -946,9 +946,9 @@
 
       // 画像グリッド
       const gridX = 26;
-      const gridY = 290;
+      const gridY = 330;
       const gridW = 1148;
-      const gridH = 700;
+      const gridH = 660;
       const itemW = gridW / 3;
       const itemH = gridH / 2;
       const imagePromises = themes.map((theme) => {
@@ -982,7 +982,7 @@
       drawRotatedImage(ctx, legend, W - 0.077 * W - 0.13 * W, gridY + gridH - 42, 0.13 * W, 3);
       if (heart) {
         ctx.globalAlpha = 0.45;
-        drawRotatedImage(ctx, heart, 60, 246, 44, -14);
+        drawRotatedImage(ctx, heart, 60, 258, 44, -14);
         ctx.globalAlpha = 1;
       }
 
