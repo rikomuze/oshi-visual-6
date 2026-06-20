@@ -945,12 +945,14 @@
       ctx.restore();
 
       // 画像グリッド
-      const gridX = 26;
-      const gridY = 350;
-      const gridW = 1148;
-      const gridH = 640;
-      const itemW = gridW / 3;
-      const itemH = gridH / 2;
+      // 画像グリッドは保存画像側で正方形に固定。
+      // 手書き文字が各写真の下端に自然に乗るよう、セル単位で位置を合わせる。
+      const itemW = 360;
+      const itemH = 360;
+      const gridW = itemW * 3;
+      const gridH = itemH * 2;
+      const gridX = (W - gridW) / 2;
+      const gridY = 330;
       const imagePromises = themes.map((theme) => {
         const selected = selectedImages[theme.id];
         return selected && selected.src ? loadCanvasImage(selected.src) : Promise.resolve(null);
@@ -973,13 +975,16 @@
         drawCoverImage(ctx, loadedImages[index], x, y, itemW, itemH, selected);
       });
 
-      // 手書きラベル。CSSの%位置に合わせて固定値化。
-      drawRotatedImage(ctx, numa, 0.048 * W, gridY + itemH - 28, 0.14 * W, -6);
-      drawRotatedImage(ctx, best, 0.408 * W, gridY + itemH - 34, 0.17 * W, 3);
-      drawRotatedImage(ctx, cute, W - 0.073 * W - 0.13 * W, gridY + itemH - 28, 0.13 * W, -4);
-      drawRotatedImage(ctx, cool, 0.070 * W, gridY + gridH - 42, 0.13 * W, 4);
-      drawRotatedImage(ctx, danger, 0.410 * W, gridY + gridH - 48, 0.18 * W, -3);
-      drawRotatedImage(ctx, legend, W - 0.077 * W - 0.13 * W, gridY + gridH - 42, 0.13 * W, 3);
+      // 手書きラベル。各写真セルの下端に「乗る」ように、セル基準で配置。
+      // x: セル内の左位置 / y: セル下端から少し上 / width: セル幅に対するサイズ
+      const labelYTop = gridY + itemH - 34;
+      const labelYBottom = gridY + gridH - 42;
+      drawRotatedImage(ctx, numa,   gridX + itemW * 0 + 34, labelYTop,    itemW * 0.42, -6);
+      drawRotatedImage(ctx, best,   gridX + itemW * 1 + 82, labelYTop - 6,itemW * 0.50,  3);
+      drawRotatedImage(ctx, cute,   gridX + itemW * 2 + 176,labelYTop - 2,itemW * 0.40, -4);
+      drawRotatedImage(ctx, cool,   gridX + itemW * 0 + 46, labelYBottom, itemW * 0.40,  4);
+      drawRotatedImage(ctx, danger, gridX + itemW * 1 + 96, labelYBottom - 6,itemW * 0.52, -3);
+      drawRotatedImage(ctx, legend, gridX + itemW * 2 + 176,labelYBottom, itemW * 0.40,  3);
       if (heart) {
         ctx.globalAlpha = 0.45;
         drawRotatedImage(ctx, heart, 60, 270, 44, -14);
@@ -992,7 +997,7 @@
       ctx.font = "900 18px system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif";
       ctx.textAlign = "right";
       ctx.textBaseline = "top";
-      ctx.fillText(`selected by ${userName}`.toLowerCase(), 1148, 1024);
+      ctx.fillText(`selected by ${userName}`.toLowerCase(), 1148, 1084);
       ctx.restore();
 
       return canvas;
