@@ -205,16 +205,12 @@
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 0;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  height: auto;
+  height: 66%;
   margin: 0 0 12px;
   border-radius: 22px;
   overflow: hidden;
 }
-    .collage-item {
-  aspect-ratio: 1 / 1;
-}
+   
     /* capture fix: export uses the same layout as preview */
     .collage-item { position: relative; min-width: 0; overflow: hidden; border-radius: 20px; background: linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,241,247,.88)); box-shadow: 0 10px 26px rgba(63,40,52,.12), inset 0 0 0 2px rgba(255,255,255,.72); }
     /* capture fix: export uses the same layout as preview */
@@ -993,8 +989,8 @@
 
       // 手書きラベル。各写真セルの下端に「乗る」ように、セル基準で配置。
       // x: セル内の左位置 / y: セル下端から少し上 / width: セル幅に対するサイズ
-      const labelYTop = gridY + itemH - 34;
-      const labelYBottom = gridY + gridH - 56;
+     const labelYTop = gridY + itemH - 44;
+const labelYBottom = gridY + gridH - 68;
       drawRotatedImage(ctx, numa,   gridX + itemW * 0 + 34, labelYTop,    itemW * 0.42, -6);
       drawRotatedImage(ctx, best,   gridX + itemW * 1 + 82, labelYTop - 6,itemW * 0.50,  3);
       drawRotatedImage(ctx, cute,   gridX + itemW * 2 + 176,labelYTop - 2,itemW * 0.40, -4);
