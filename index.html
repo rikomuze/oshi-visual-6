@@ -40,6 +40,107 @@
     img { display: block; max-width: 100%; }
     .page { width: min(100%, 1040px); margin: 0 auto; padding: 24px 14px 48px; }
 
+
+    /* 共通ヘッダー */
+    .tool-header {
+      width: min(1120px, calc(100% - 24px));
+      margin: 12px auto 18px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(240, 180, 210, 0.45);
+      border-radius: 999px;
+      box-shadow: 0 8px 24px rgba(70, 70, 120, 0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: sticky;
+      top: 10px;
+      z-index: 950;
+    }
+
+    .tool-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 12px 22px;
+    }
+
+    .tool-logo {
+      flex-shrink: 0;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      color: #8b8f9b;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .tool-logo strong {
+      color: #f25a9b;
+    }
+
+    .tool-logo span {
+      color: #f25a9b;
+      font-weight: 900;
+    }
+
+    .tool-nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .tool-nav a {
+      color: #53596a;
+      text-decoration: none;
+      padding: 6px 0;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tool-nav a.active {
+      color: #f25a9b;
+      border-bottom-color: #f25a9b;
+    }
+
+    @media (max-width: 760px) {
+      .tool-header {
+        width: calc(100% - 20px);
+        margin: 10px auto 16px;
+        border-radius: 22px;
+      }
+
+      .tool-header-inner {
+        display: block;
+        padding: 12px 14px 10px;
+      }
+
+      .tool-logo {
+        display: block;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 17px;
+      }
+
+      .tool-nav {
+        overflow-x: auto;
+        gap: 18px;
+        padding: 2px 4px 6px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tool-nav::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tool-nav a {
+        flex: 0 0 auto;
+        font-size: 12px;
+      }
+    }
+
     /* ヘッダー */
     .hero {
       position: relative;
@@ -361,6 +462,22 @@
   </style>
 </head>
 <body>
+  <header class="tool-header">
+    <div class="tool-header-inner">
+      <a href="https://rikomuze.github.io/muze-tool-box/" class="tool-logo">
+        <strong>MUZE</strong> TOOL BOX <span>♡</span>
+      </a>
+
+      <nav class="tool-nav" aria-label="共通ナビゲーション">
+        <a href="https://rikomuze.github.io/muze-tool-box/">⌂ TOP</a>
+        <a href="https://rikomuze.github.io/mazzel-goods-calculator-new/">グッズ計算機</a>
+        <a href="https://rikomuze.github.io/mazzel-best-visual/">最強9マス</a>
+        <a href="https://rikomuze.github.io/oshi-visual-6/" class="active">推しビジュ6選</a>
+        <a href="https://abaft-conga-f54.notion.site/fanmeating?pvs=74">チケット解説</a>
+      </nav>
+    </div>
+  </header>
+
   <main class="page">
     <header class="hero">
       <h1>推しビジュ<span>6選</span></h1>
