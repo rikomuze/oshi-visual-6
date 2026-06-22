@@ -293,7 +293,7 @@
     .result-card.exporting { box-shadow: none !important; }
     .result-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 42%, rgba(255,255,255,.10), transparent 34%), linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,187,217,.08)); z-index: 5; }
     .result-header { position: relative; z-index: 8; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
-    .result-kicker-image { display: block; width: auto; height: 16px; margin-bottom: 4px; transform: rotate(-5deg); opacity: .95; }
+    .result-kicker-image { display: block; width: auto; height: 30px; margin-bottom: 8px; transform: rotate(-5deg); opacity: .98; }
     /* capture fix: export uses the same layout as preview */
     .result-title { margin: 4px 0 0; font-size: clamp(26px, 8vw, 48px); line-height: .9; letter-spacing: -0.07em; color: var(--result-ink); text-shadow: 0 2px 0 rgba(255,255,255,.9); }
     /* capture fix: export uses the same layout as preview */
@@ -448,7 +448,7 @@
       .result-title { font-size: 31px; }
       .result-member { padding: 7px 9px; font-size: 9px; }
       .collage-grid { height: 66%; }
-      .result-kicker-image { height: 14px; }
+      .result-kicker-image { height: 24px; }
       .hand-label-image { height: auto; }
       .label-numa { width: 14%; }
       .label-best { width: 17%; }
@@ -1059,7 +1059,7 @@
         loadCanvasImage(`${handBase}/legend.png`)
       ]);
 
-      if (kicker) drawRotatedImage(ctx, kicker, 28, 58, 118, -5);
+      if (kicker) drawRotatedImage(ctx, kicker, 28, 48, 220, -5);
 
       // タイトル
       ctx.save();
@@ -1069,8 +1069,8 @@
       ctx.shadowOffsetY = 3;
       ctx.font = "900 76px system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif";
       ctx.textBaseline = "top";
-      ctx.fillText(member.name, 26, 118);
-      ctx.fillText("VISUAL", 26, 188);
+      ctx.fillText(member.name, 26, 142);
+      ctx.fillText("VISUAL", 26, 212);
       ctx.restore();
 
       // 画像グリッド
