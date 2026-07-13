@@ -3,20 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>推しビジュ6選</title>
+  <title>推しビジュ6選 | MUZE TOOL BOX</title>
   <meta name="description" content="6つのテーマで推しの好きなビジュを選んで、タグ画っぽい1枚を作れるメーカーです。" />
   <meta property="og:title" content="推しビジュ6選" />
   <meta property="og:description" content="6つのテーマで選ぶだけ。推しの好きなビジュを、可愛く1枚に。" />
   <meta property="og:type" content="website" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- 結果画像でも使うフォント(4ファミリー): Zen Kaku Gothic New(日本語) / Klee One(日本語手書き) / Montserrat(欧文サンセリフ) / DM Serif Display(欧文セリフ・英字専用) -->
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Klee+One:wght@400;600&family=Montserrat:wght@500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
   <style>
   /* =====================================================================
-     推しビジュ6選 — MUZE TOOL BOX「作業机」ブランド版
-     机の上でアルバム台紙に6枚を並べ、白フチのプリントに現像する。
-     影は“物が机に落とす影”1種のみ。UI部品に影・角丸カードは使わない。
+     推しビジュ6選 — MUZE TOOL BOX「作業机」ブランド版 v3
+     ・結果画像は3デザイン(スクラップ/アーカイブ/証明写真)
+     ・プレビュー = 保存画像(同じCanvas描画関数を共用、ズレなし)
      ===================================================================== */
+  /* 手書きフォント「花とちょうちょ」(スクラップの写真下6ラベル専用) */
+  @font-face {
+    font-family: "HanaToChoucho";
+    src: url("assets/fonts/hana-to-choucho.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
   :root{
     --desk:#f1ebe1;
     --paper:#ffffff;
@@ -26,8 +35,37 @@
     --tape-berry:rgba(226,122,148,.85);
     --tape-berry-solid:#e27a94;
     --tape-mint:rgba(164,197,175,.85);
-    --hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",cursive;
-    --gothic:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;
+    /* フォント統一(Canvas側 app.js の F と同一定義)
+       HanaToChoucho(花とちょうちょ)はスクラップの写真下6ラベル専用。
+       UI・共通ヘッダー・他デザインには使用しない。 */
+    --font-jp:
+      "Zen Kaku Gothic New",
+      "Noto Sans JP",
+      "Hiragino Sans",
+      "Yu Gothic",
+      sans-serif;
+    --font-jp-hand:
+      "HanaToChoucho",
+      "Klee One",
+      "Zen Kaku Gothic New",
+      sans-serif; /* スクラップの6ラベル専用 */
+    --font-jp-klee:
+      "Klee One",
+      "Zen Kaku Gothic New",
+      "Hiragino Sans",
+      sans-serif; /* UIの手書き風はこちら(花とちょうちょは使わない) */
+    --font-en-sans:
+      "Montserrat",
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+    --font-en-serif:
+      "DM Serif Display",
+      Georgia,
+      serif; /* 欧文専用。日本語には使用しない */
+    /* 旧名エイリアス(既存CSS互換。UIは Klee 系のまま) */
+    --hand:var(--font-jp-klee);
+    --gothic:var(--font-jp);
     --obj-shadow:0 10px 24px rgba(64,56,47,.18);
     --dash:1.5px dashed rgba(64,56,47,.35);
   }
@@ -49,7 +87,56 @@
   .shell{max-width:980px;margin:0 auto;padding:0 16px}
   :focus-visible{outline:2.5px solid var(--tape-berry-solid);outline-offset:3px}
 
-  /* ---------- 共通ヘッダー(ロゴステッカー) ---------- */
+  /* =====================================================================
+     共通ヘッダー(MUZE TOOL BOX 全ツール共通ナビ)
+     紙のインデックスタブが机の縁に並んでいるイメージ。
+     ▼リンクURLはこの下のHTML(<nav class="global-nav">内)で差し替えられます
+     ===================================================================== */
+  .global-nav{
+    background:rgba(255,255,255,.6);
+    border-bottom:var(--dash);
+    backdrop-filter:blur(3px);
+  }
+  .global-nav-inner{
+    max-width:980px;margin:0 auto;
+    display:flex;align-items:flex-end;gap:6px;
+    padding:10px 16px 0;
+    overflow-x:auto;                /* スマホは横スクロール */
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .global-nav-inner::-webkit-scrollbar{display:none}
+  .gnav-tab{
+    flex:0 0 auto;
+    display:inline-block;
+    padding:7px 13px 8px;
+    font-family:var(--hand);
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:.05em;
+    white-space:nowrap;
+    background:var(--paper);
+    border:1.5px solid rgba(64,56,47,.22);
+    border-bottom:0;
+    transform:rotate(-.6deg);
+    position:relative;
+    top:1px;
+  }
+  .gnav-tab:nth-child(2n){transform:rotate(.6deg)}
+  .gnav-tab.gnav-home{
+    background:var(--pencil);color:var(--desk);
+    border-color:var(--pencil);
+  }
+  .gnav-tab.is-current{
+    border-color:var(--pencil);
+    box-shadow:inset 0 -3px 0 var(--tape-berry-solid);
+  }
+  @media(min-width:900px){
+    .global-nav-inner{overflow:visible;justify-content:flex-start;gap:8px}
+    .gnav-tab{font-size:13px;padding:8px 16px 9px}
+  }
+
+  /* ---------- ページ見出し ---------- */
   .site-head{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
     padding:18px 0 4px;
@@ -80,7 +167,6 @@
     font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--faded);
   }
 
-  /* ---------- 見出し ---------- */
   .intro{padding:18px 0 6px}
   .intro h1{
     font-family:var(--hand);
@@ -112,7 +198,7 @@
   }
   .tags{
     display:flex;
-    flex-wrap:wrap;           /* 8人全員を常に表示(横スクロールだと続きに気づけない) */
+    flex-wrap:wrap;
     gap:14px 10px;
     padding:12px 2px 6px;
   }
@@ -179,7 +265,7 @@
   .frame-slot .mini-print{
     width:100%;height:100%;
     background:var(--paper);
-    padding:5px 5px 5px;
+    padding:5px;
     box-shadow:var(--obj-shadow);
     transform:rotate(-1.2deg);
     cursor:pointer;
@@ -248,11 +334,11 @@
     width:100%;
     accent-color:var(--tape-berry-solid);
     cursor:pointer;
-    touch-action:pan-x; /* 調整中にページが縦スクロールしない */
+    touch-action:pan-x;
     min-height:28px;
   }
 
-  /* ---------- 仕上げ(背景・名前・プレビュー) ---------- */
+  /* ---------- 仕上げ(デザイン・名前・プレビュー) ---------- */
   .finish{margin-top:26px}
   .finish>h2{
     font-family:var(--hand);font-weight:600;font-size:20px;
@@ -269,18 +355,19 @@
   .chips{display:flex;gap:10px;flex-wrap:wrap}
   .chip{
     min-height:44px;min-width:44px;
-    padding:9px 14px;
+    padding:9px 16px;
     font-family:var(--hand);
     font-weight:600;font-size:13.5px;
     background:transparent;
     border:1.5px solid var(--pencil);
-    border-radius:50%;           /* 手描きの丸囲み(唯一の丸) */
+    border-radius:50%;
     cursor:pointer;
     transform:rotate(2deg);
   }
   .chip:nth-child(2){transform:rotate(-2deg)}
   .chip:nth-child(3){transform:rotate(1.4deg)}
   .chip[aria-pressed="true"]{background:var(--pencil);color:var(--desk)}
+  .chip-hint{font-size:11px;color:var(--faded);margin-top:6px;line-height:1.7}
   .name-input{
     width:100%;max-width:340px;
     font-size:16px;               /* iOSのズーム防止 */
@@ -292,11 +379,13 @@
     padding:8px 2px;
   }
   .name-input::placeholder{color:rgba(64,56,47,.35)}
+  .name-note{font-size:11px;color:var(--faded);margin-top:4px;line-height:1.7}
 
-  /* プリント(完成プレビューの紙) */
+  /* プリント(完成プレビューの紙)
+     中身は保存画像と同一のCanvas。CSSで縮小表示するだけなのでズレない。 */
   .print{
     background:var(--paper);
-    padding:2.2%;                 /* 保存画像の白フチと同比率 */
+    padding:2.2%;
     box-shadow:var(--obj-shadow);
     transform:rotate(-.8deg);
     position:relative;
@@ -321,112 +410,12 @@
   @media(prefers-reduced-motion:no-preference){
     .print .tape-b{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
   }
-
-  /* ---------- 完成画像本体(既存の世界観を維持) ---------- */
-  .result-card{
-    --result-main-dark:#e84d8d;
-    --result-ink:#3a2531;
-    --result-soft:rgba(53,37,47,.66);
-    position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;
-    background:
-      radial-gradient(circle at 12% 4%, rgba(255,188,216,.95), transparent 30%),
-      radial-gradient(circle at 88% 0%, rgba(239,226,255,.95), transparent 32%),
-      linear-gradient(180deg,#fffafd 0%,#fff1f7 58%,#fff8ef 100%);
-    padding:26px 12px 12px;
-  }
-  .result-card.bg-soda{
-    --result-main-dark:#5aa8dc;
-    --result-ink:#27344f;
-    --result-soft:rgba(39,52,79,.62);
-    background:
-      radial-gradient(circle at 10% 2%, rgba(199,237,255,.96), transparent 30%),
-      radial-gradient(circle at 88% 4%, rgba(233,224,255,.88), transparent 32%),
-      linear-gradient(180deg,#fbfeff 0%,#eef8ff 56%,#fff7fb 100%);
-  }
-  .result-card.bg-classic{
-    --result-main-dark:#9e5e51;
-    --result-ink:#46322d;
-    --result-soft:rgba(70,50,45,.62);
-    background:
-      radial-gradient(circle at 12% 4%, rgba(244,214,196,.95), transparent 30%),
-      radial-gradient(circle at 88% 0%, rgba(255,246,228,.92), transparent 32%),
-      linear-gradient(180deg,#fffaf3 0%,#f5e8dc 58%,#fff7ee 100%);
-  }
-  .result-card::before{
-    content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
-    background:
-      radial-gradient(circle at 50% 42%, rgba(255,255,255,.10), transparent 34%),
-      linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,187,217,.08));
-  }
-  .result-header{position:relative;z-index:8;margin-bottom:14px}
-  .result-kicker-image{display:block;width:auto;height:26px;margin-bottom:6px;transform:rotate(-5deg);opacity:.98}
-  .result-title{
-    margin:2px 0 0;
-    font-family:var(--gothic);
-    font-weight:700;
-    font-size:clamp(26px,8vw,44px);
-    line-height:.92;letter-spacing:-.06em;
-    color:var(--result-ink);
-    text-shadow:0 2px 0 rgba(255,255,255,.9);
-  }
-  /* ラベルの位置基準になるラップ。高さはここが持つ */
-  .collage-wrap{
-    position:relative;z-index:4;
-    height:66%;
-    margin:0 0 10px;
-  }
-  .collage-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    grid-template-rows:repeat(2,1fr);
-    gap:0;height:100%;
-    border-radius:20px;overflow:hidden;
-  }
-  .collage-item{
-    position:relative;min-width:0;overflow:hidden;border-radius:18px;
-    background:linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,241,247,.88));
-    box-shadow:0 10px 26px rgba(63,40,52,.12), inset 0 0 0 2px rgba(255,255,255,.72);
-  }
-  .collage-item img,.collage-placeholder{width:100%;height:100%;object-fit:cover;object-position:center top}
-  .collage-item img{transform-origin:center center}
-  .collage-placeholder{
-    display:grid;place-items:center;padding:10px;
-    color:rgba(232,77,141,.6);
-    text-align:center;font-size:11px;font-weight:700;line-height:1.5;
-  }
-  .result-card.bg-soda .collage-placeholder{color:rgba(90,168,220,.7)}
-  .result-card.bg-classic .collage-placeholder{color:rgba(158,94,81,.7)}
-  .collage-item::before{
-    content:"";position:absolute;inset:-2px;pointer-events:none;z-index:2;
-    background:
-      radial-gradient(circle at 50% 50%, transparent 58%, rgba(255,255,255,.30) 100%),
-      linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,152,196,.08));
-  }
-  /* 手書きラベル: .collage-wrap(=写真グリッド)基準の%。
-     保存Canvas(グリッド1080×720)の座標をそのまま比率化しているので、
-     タイトル部の高さが画面幅で変わってもコマの下端からずれない。 */
-  .hand-label-image{position:absolute;z-index:6;display:block;height:auto}
-  .label-numa  {left:3.1%; top:43.6%;width:14.0%;transform:rotate(-6deg)}
-  .label-best  {left:40.9%;top:42.8%;width:16.7%;transform:rotate(3deg)}
-  .label-cute  {left:83.0%;top:43.3%;width:13.3%;transform:rotate(-4deg)}
-  .label-cool  {left:4.3%; top:90.3%;width:13.3%;transform:rotate(4deg)}
-  .label-danger{left:42.2%;top:89.4%;width:17.3%;transform:rotate(-3deg)}
-  .label-legend{left:83.0%;top:90.3%;width:13.3%;transform:rotate(3deg)}
-  .doodle-image{position:absolute;z-index:7;display:block;opacity:.45;pointer-events:none;left:1.9%;top:-6.7%;width:4.1%;transform:rotate(-14deg)}
-  .selected-by{
-    position:relative;z-index:8;
-    display:flex;justify-content:flex-end;
-    font-family:var(--hand);
-    color:var(--result-soft);
-    font-size:12px;font-weight:600;letter-spacing:.05em;
-  }
-  .made-date{
-    position:relative;z-index:8;
-    display:flex;justify-content:flex-end;
-    font-family:var(--hand);
-    color:var(--result-soft);
-    font-size:10px;font-weight:400;letter-spacing:.08em;
-    opacity:.85;
+  #previewCanvas{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:1/1;
+    background:#fff;
   }
 
   /* ---------- 下部ドック(進み具合+保存) ---------- */
@@ -549,6 +538,24 @@
   .modal-note{font-size:11px;color:var(--faded);text-align:center;margin-top:10px;line-height:1.7}
   input[type="file"]{display:none}
 
+  /* ---------- 保存フォールバック(アプリ内ブラウザ用) ---------- */
+  .fallback-inner{
+    width:100%;max-width:560px;
+    max-height:92vh;overflow:auto;
+    background:var(--paper);
+    padding:18px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+  .fallback-inner img{
+    width:100%;height:auto;
+    border:1px solid rgba(64,56,47,.2);
+    margin:10px 0;
+  }
+  .fallback-hint{
+    font-family:var(--hand);font-weight:600;
+    font-size:13.5px;text-align:center;line-height:1.9;
+  }
+  .fallback-hint b{color:var(--tape-berry-solid)}
+
   /* ---------- モーション ---------- */
   @media(prefers-reduced-motion:no-preference){
     .settle{opacity:0;transform:translateY(12px);transition:opacity .55s ease,transform .55s ease}
@@ -566,6 +573,27 @@
   </style>
 </head>
 <body>
+
+<!-- =====================================================================
+     共通ヘッダー(MUZE TOOL BOX ナビ)
+     ▼リンクURLの差し替えはここ。href="#" は仮リンクです。
+     ===================================================================== -->
+<nav class="global-nav" aria-label="MUZE TOOL BOX のツール">
+  <div class="global-nav-inner">
+    <!-- TOP: MUZE TOOL BOX トップページ -->
+    <a class="gnav-tab gnav-home" href="https://rikomuze.github.io/muze-tool-box/">TOP / MUZE TOOL BOX</a>
+    <!-- 推しビジュ6選(このページ) -->
+    <a class="gnav-tab is-current" href="./" aria-current="page">推しビジュ6選</a>
+    <!-- 最強9マス: URLが決まったら href を差し替え -->
+    <a class="gnav-tab" href="#">最強9マス</a>
+    <!-- グッズ計算機: URLが決まったら href を差し替え -->
+    <a class="gnav-tab" href="#">グッズ計算機</a>
+    <!-- オタク沼診断: URLが決まったら href を差し替え -->
+    <a class="gnav-tab" href="#">オタク沼診断</a>
+    <!-- チケット解説: URLが決まったら href を差し替え -->
+    <a class="gnav-tab" href="#">チケット解説</a>
+  </div>
+</nav>
 
 <div class="shell">
   <header class="site-head">
@@ -599,36 +627,22 @@
       <h2>しあげ</h2>
       <div class="finish-options">
         <div>
-          <span class="opt-label" id="bgLabel">背景をえらぶ</span>
-          <div id="bgChips" class="chips" role="group" aria-labelledby="bgLabel"></div>
+          <span class="opt-label" id="designLabel">結果画像のデザイン</span>
+          <div id="designChips" class="chips" role="group" aria-labelledby="designLabel"></div>
+          <p id="designHint" class="chip-hint"></p>
         </div>
         <div>
-          <label class="opt-label" for="userNameInput">あなたの名前（画像に入ります）</label>
-          <input id="userNameInput" class="name-input" type="text" placeholder="muze" maxlength="20" autocomplete="off">
+          <label class="opt-label" for="userNameInput">表示する推し名を入力（空欄なら選択中のメンバー名）</label>
+          <input id="userNameInput" class="name-input" type="text" placeholder="例: MY OSHI" maxlength="20" autocomplete="off">
+          <p class="name-note">MAZZEL以外の推しにも使えます。入力した名前が結果画像の名前部分に入ります。</p>
         </div>
       </div>
 
       <div class="print settle" id="printWrap">
         <span class="tape-a" aria-hidden="true"></span>
         <span class="tape-b" id="tapeB" aria-hidden="true"></span>
-        <div id="resultCard" class="result-card">
-          <div class="result-header">
-            <img id="resultKickerImage" class="result-kicker-image" alt="my favorite">
-            <h2 id="resultTitle" class="result-title">KAIRYU<br>VISUAL</h2>
-          </div>
-          <div class="collage-wrap">
-            <div id="collageGrid" class="collage-grid"></div>
-            <img id="labelNuma" class="hand-label-image label-numa" alt="沼落ちビジュ">
-            <img id="labelBest" class="hand-label-image label-best" alt="今の最愛ビジュ">
-            <img id="labelCute" class="hand-label-image label-cute" alt="かわいい">
-            <img id="labelCool" class="hand-label-image label-cool" alt="かっこいい">
-            <img id="labelDanger" class="hand-label-image label-danger" alt="ずるい">
-            <img id="labelLegend" class="hand-label-image label-legend" alt="殿堂入り">
-            <img id="doodleHeartImage" class="doodle-image" alt="">
-          </div>
-          <div id="selectedBy" class="selected-by">selected by muze</div>
-          <div id="madeDate" class="made-date"></div>
-        </div>
+        <!-- プレビュー本体: 保存画像と同じ1200×1200のCanvasをそのまま縮小表示 -->
+        <canvas id="previewCanvas" width="1200" height="1200" aria-label="完成イメージのプレビュー"></canvas>
       </div>
     </section>
   </div>
@@ -664,739 +678,21 @@
   </div>
 </div>
 
+<!-- 保存フォールバック: ダウンロードが使えないアプリ内ブラウザ(Xなど)では
+     画像を表示して長押し保存してもらう -->
+<div id="saveFallback" class="modal" role="dialog" aria-modal="true" aria-label="画像を長押しで保存">
+  <div class="fallback-inner">
+    <div class="modal-header">
+      <div class="modal-title">できあがり！</div>
+      <button id="fallbackClose" class="close-button" type="button" aria-label="閉じる">✕</button>
+    </div>
+    <p class="fallback-hint">この画像を<b>長押し</b>して「写真に保存」してね。<br>（アプリ内ブラウザでは自動保存ができないため）</p>
+    <img id="fallbackImage" alt="完成した推しビジュ6選の画像">
+  </div>
+</div>
+
 <input id="uploadInput" type="file" accept="image/*">
 
-<script>
-/* =====================================================================
-   ロジック — 機能は現行版と同一(メンバー切替で選択リセット/候補20枚降順/
-   jpg→pngフォールバック/アップロード位置調整/Canvas直描き保存)。
-   変更点: html2canvas依存を撤去、アップロード自動縮小、保存画像に
-   白フチと日付を追加、共有キャンセルをエラー扱いしない。
-   ===================================================================== */
-(function () {
-"use strict";
-
-/* ---------- データ(現行と同一) ---------- */
-var members = [
-  { id: "kairyu", name: "KAIRYU" },
-  { id: "naoya",  name: "NAOYA" },
-  { id: "ran",    name: "RAN" },
-  { id: "seito",  name: "SEITO" },
-  { id: "ryuki",  name: "RYUKI" },
-  { id: "takuto", name: "TAKUTO" },
-  { id: "hayato", name: "HAYATO" },
-  { id: "eiki",   name: "EIKI" }
-];
-var themes = [
-  { id: "numa",   label: "沼落ちビジュ" },
-  { id: "best",   label: "今の最愛ビジュ" },
-  { id: "cute",   label: "かわいい" },
-  { id: "cool",   label: "かっこいい" },
-  { id: "danger", label: "ずるい" },
-  { id: "legend", label: "殿堂入り" }
-];
-var backgroundThemes = [
-  { id: "strawberry", label: "ベリー" },
-  { id: "soda",       label: "ソーダ" },
-  { id: "classic",    label: "クラシカル" }
-];
-var IMAGE_COUNT = 20;
-var IMAGE_ORDER_DESCENDING = true;
-var HAND_ASSETS = "assets/handwrite/white";
-var LABEL_FILES = { numa:"numa.png", best:"current-best.png", cute:"cute.png", cool:"cool.png", danger:"zurui.png", legend:"legend.png" };
-
-/* ---------- 状態 ---------- */
-var currentMemberId = "kairyu";
-var currentBgThemeId = "strawberry";
-var currentThemeId = null;
-var selectedImages = createEmptySelection();
-var lastFocused = null;
-
-/* ---------- 要素 ---------- */
-var memberTags = document.getElementById("memberTags");
-var bgChips = document.getElementById("bgChips");
-var themeList = document.getElementById("themeList");
-var collageGrid = document.getElementById("collageGrid");
-var resultTitle = document.getElementById("resultTitle");
-var selectedByEl = document.getElementById("selectedBy");
-var madeDateEl = document.getElementById("madeDate");
-var resultCard = document.getElementById("resultCard");
-var resultKickerImage = document.getElementById("resultKickerImage");
-var doodleHeartImage = document.getElementById("doodleHeartImage");
-var saveBtn = document.getElementById("saveBtn");
-var statusEl = document.getElementById("status");
-var progressEl = document.getElementById("progress");
-var photoModal = document.getElementById("photoModal");
-var modalTitle = document.getElementById("modalTitle");
-var modalPhotoGrid = document.getElementById("modalPhotoGrid");
-var uploadInput = document.getElementById("uploadInput");
-var modalUploadBtn = document.getElementById("modalUploadBtn");
-var closeButton = photoModal.querySelector(".close-button");
-var tapeB = document.getElementById("tapeB");
-var labelImageMap = {
-  numa: document.getElementById("labelNuma"),
-  best: document.getElementById("labelBest"),
-  cute: document.getElementById("labelCute"),
-  cool: document.getElementById("labelCool"),
-  danger: document.getElementById("labelDanger"),
-  legend: document.getElementById("labelLegend")
-};
-
-init();
-
-function init() {
-  renderMemberTags();
-  renderBgChips();
-  renderThemeCards();
-  renderHandwrittenAssets();
-  updateResult();
-
-  document.getElementById("userNameInput").addEventListener("input", updateResult);
-  saveBtn.addEventListener("click", saveResultImage);
-  modalUploadBtn.addEventListener("click", function(){ uploadInput.click(); });
-  uploadInput.addEventListener("change", handleUploadFromInput);
-  closeButton.addEventListener("click", closeModal);
-  photoModal.addEventListener("click", function (e) {
-    if (e.target === photoModal) closeModal();
-  });
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && photoModal.classList.contains("active")) closeModal();
-  });
-
-  // スクロールで静かに置かれる
-  if ("IntersectionObserver" in window) {
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
-      });
-    }, { threshold: .1 });
-    document.querySelectorAll(".settle").forEach(function (el) { io.observe(el); });
-  } else {
-    document.querySelectorAll(".settle").forEach(function (el) { el.classList.add("in"); });
-  }
-}
-
-function createEmptySelection() {
-  var empty = {};
-  themes.forEach(function (t) { empty[t.id] = null; });
-  return empty;
-}
-function getCurrentMember() {
-  return members.find(function (m) { return m.id === currentMemberId; }) || members[0];
-}
-
-/* ---------- メンバー名札 ---------- */
-function renderMemberTags() {
-  memberTags.innerHTML = "";
-  members.forEach(function (m) {
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "tag";
-    b.textContent = m.name;
-    b.setAttribute("aria-pressed", m.id === currentMemberId ? "true" : "false");
-    b.addEventListener("click", function () {
-      if (m.id === currentMemberId) return;
-      currentMemberId = m.id;
-      currentThemeId = null;
-      selectedImages = createEmptySelection(); // 現行仕様: 切替でリセット
-      renderMemberTags();
-      renderThemeCards();
-      updateResult();
-      setStatus(m.name + " の6枚をつくる", true);
-    });
-    memberTags.appendChild(b);
-  });
-}
-
-/* ---------- 背景チップ ---------- */
-function renderBgChips() {
-  bgChips.innerHTML = "";
-  backgroundThemes.forEach(function (t) {
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip";
-    b.textContent = t.label;
-    b.setAttribute("aria-pressed", t.id === currentBgThemeId ? "true" : "false");
-    b.addEventListener("click", function () {
-      currentBgThemeId = t.id;
-      renderBgChips();
-      updateBackgroundTheme();
-    });
-    bgChips.appendChild(b);
-  });
-  updateBackgroundTheme();
-}
-function updateBackgroundTheme() {
-  backgroundThemes.forEach(function (t) { resultCard.classList.remove("bg-" + t.id); });
-  resultCard.classList.add("bg-" + currentBgThemeId);
-}
-
-function renderHandwrittenAssets() {
-  resultKickerImage.src = HAND_ASSETS + "/my-favorite.png";
-  doodleHeartImage.src = HAND_ASSETS + "/heart.png";
-  Object.keys(LABEL_FILES).forEach(function (id) {
-    if (labelImageMap[id]) labelImageMap[id].src = HAND_ASSETS + "/" + LABEL_FILES[id];
-  });
-}
-
-/* ---------- 位置調整(プレビューと保存で同じ値) ---------- */
-function adjustDefaults(s) {
-  s = s || {};
-  return {
-    posX: s.posX !== undefined ? s.posX : 50,
-    posY: s.posY !== undefined ? s.posY : 20,
-    scale: s.scale !== undefined ? s.scale : 100
-  };
-}
-function getImageAdjustStyle(selected) {
-  if (!selected || selected.type !== "upload") return "";
-  var a = adjustDefaults(selected);
-  return "object-position:" + a.posX + "% " + a.posY + "%;transform:scale(" + (a.scale / 100) + ");";
-}
-
-/* ---------- 台紙(6枠) ---------- */
-function renderThemeCards() {
-  themeList.innerHTML = "";
-  themes.forEach(function (theme) {
-    var selected = selectedImages[theme.id];
-    var card = document.createElement("article");
-    card.className = "frame";
-
-    var slot = document.createElement("div");
-    slot.className = "frame-slot";
-    if (selected && selected.src) {
-      var mp = document.createElement("button");
-      mp.type = "button";
-      mp.className = "mini-print";
-      mp.setAttribute("aria-label", theme.label + " の写真を変える");
-      var im = document.createElement("img");
-      im.src = selected.src;
-      im.alt = theme.label + " 選択中";
-      var st = getImageAdjustStyle(selected);
-      if (st) im.style.cssText = st;
-      mp.appendChild(im);
-      mp.addEventListener("click", function(){ openModal(theme.id); });
-      slot.appendChild(mp);
-    } else {
-      var emp = document.createElement("button");
-      emp.type = "button";
-      emp.className = "empty";
-      emp.innerHTML = "ここに<br>1枚";
-      emp.setAttribute("aria-label", theme.label + " の写真を選ぶ");
-      emp.addEventListener("click", function(){ openModal(theme.id); });
-      slot.appendChild(emp);
-    }
-
-    var body = document.createElement("div");
-    body.className = "frame-body";
-    body.innerHTML =
-      "<h3>" + theme.label + "</h3>" +
-      '<p class="state">' + (selected ? (selected.type === "upload" ? "アップロード画像を選択中" : "選択中") : "まだえらんでない") + "</p>";
-
-    var actions = document.createElement("div");
-    actions.className = "frame-actions";
-
-    var pick = document.createElement("button");
-    pick.type = "button";
-    pick.className = "btn primary";
-    pick.textContent = "候補から選ぶ";
-    pick.addEventListener("click", function(){ openModal(theme.id); });
-
-    var up = document.createElement("button");
-    up.type = "button";
-    up.className = "btn";
-    up.textContent = "画像をアップロード";
-    up.addEventListener("click", function(){
-      currentThemeId = theme.id;
-      uploadInput.click();
-    });
-
-    actions.appendChild(pick);
-    actions.appendChild(up);
-
-    if (selected) {
-      var clr = document.createElement("button");
-      clr.type = "button";
-      clr.className = "btn quiet";
-      clr.textContent = "リセット";
-      clr.addEventListener("click", function(){
-        selectedImages[theme.id] = null;
-        renderThemeCards();
-        updateResult();
-      });
-      actions.appendChild(clr);
-    }
-    body.appendChild(actions);
-
-    // スライダー(アップロード時のみ)
-    var adjust = document.createElement("div");
-    adjust.className = "adjust" + (selected && selected.type === "upload" ? " is-visible" : "");
-    if (selected && selected.type === "upload") {
-      buildSliders(adjust, theme.id);
-    }
-    body.appendChild(adjust);
-
-    card.appendChild(slot);
-    card.appendChild(body);
-    themeList.appendChild(card);
-  });
-  updateProgress();
-}
-
-function buildSliders(container, themeId) {
-  var rows = [
-    { key: "posX",  label: "左右位置",  min: 0,  max: 100 },
-    { key: "posY",  label: "上下位置",  min: 0,  max: 100 },
-    { key: "scale", label: "拡大・縮小", min: 80, max: 180 }
-  ];
-  rows.forEach(function (row) {
-    var wrap = document.createElement("div");
-    var label = document.createElement("label");
-    var name = document.createElement("span");
-    name.textContent = row.label;
-    var val = document.createElement("span");
-    var input = document.createElement("input");
-    input.type = "range";
-    input.min = row.min;
-    input.max = row.max;
-    input.setAttribute("aria-label", row.label);
-    var cur = adjustDefaults(selectedImages[themeId])[row.key];
-    input.value = cur;
-    val.textContent = cur + "%";
-    input.addEventListener("input", function () {
-      var v = Number(input.value);
-      val.textContent = v + "%";
-      if (selectedImages[themeId]) {
-        selectedImages[themeId][row.key] = v;
-        // サムネとプレビューだけ更新(全再描画しない=スライダー操作が途切れない)
-        updateThumbFor(themeId);
-        updateResult();
-      }
-    });
-    label.appendChild(name);
-    label.appendChild(val);
-    wrap.appendChild(label);
-    wrap.appendChild(input);
-    container.appendChild(wrap);
-  });
-}
-
-function updateThumbFor(themeId) {
-  var idx = themes.findIndex(function (t) { return t.id === themeId; });
-  var card = themeList.children[idx];
-  if (!card) return;
-  var img = card.querySelector(".mini-print img");
-  var s = selectedImages[themeId];
-  if (img && s) {
-    var st = getImageAdjustStyle(s);
-    img.style.cssText = st;
-  }
-}
-
-function updateProgress() {
-  var filled = themes.filter(function (t) { return !!selectedImages[t.id]; }).length;
-  var left = themes.length - filled;
-  if (left === 0) {
-    progressEl.textContent = "ぜんぶ揃った！";
-    progressEl.classList.add("done");
-  } else {
-    progressEl.textContent = "あと" + left + "枠";
-    progressEl.classList.remove("done");
-  }
-}
-
-/* ---------- 候補モーダル ---------- */
-function openModal(themeId) {
-  currentThemeId = themeId;
-  lastFocused = document.activeElement;
-  var theme = themes.find(function (t) { return t.id === themeId; });
-  modalTitle.textContent = theme.label + "を選ぶ";
-  renderModalPhotoGrid();
-  photoModal.classList.add("active");
-  closeButton.focus();
-}
-function closeModal() {
-  photoModal.classList.remove("active");
-  modalPhotoGrid.innerHTML = "";
-  if (lastFocused && lastFocused.focus) lastFocused.focus();
-}
-function renderModalPhotoGrid() {
-  if (!currentThemeId) return;
-  modalPhotoGrid.innerHTML = "";
-  var selected = selectedImages[currentThemeId];
-  var numbers = [];
-  for (var i = 1; i <= IMAGE_COUNT; i++) numbers.push(String(i).padStart(2, "0"));
-  if (IMAGE_ORDER_DESCENDING) numbers.reverse();
-
-  numbers.forEach(function (number) {
-    var button = document.createElement("button");
-    button.type = "button";
-    button.className = "photo-option";
-    var img = document.createElement("img");
-    img.src = "images/" + currentMemberId + "/" + number + ".jpg";
-    img.alt = getCurrentMember().name + " " + number;
-    img.loading = "lazy";
-    img.onerror = function () {
-      if (!img.dataset.fallbackTried) {
-        img.dataset.fallbackTried = "true";
-        img.src = "images/" + currentMemberId + "/" + number + ".png";
-      } else {
-        button.style.display = "none";
-      }
-    };
-    if (selected && selected.src && selected.src.indexOf("/images/" + currentMemberId + "/" + number + ".") !== -1) {
-      button.classList.add("is-selected");
-    }
-    button.appendChild(img);
-    button.addEventListener("click", function () {
-      selectedImages[currentThemeId] = { src: img.currentSrc || img.src, type: "preset" };
-      renderThemeCards();
-      updateResult();
-      closeModal();
-    });
-    modalPhotoGrid.appendChild(button);
-  });
-}
-
-/* ---------- アップロード(自動縮小つき) ---------- */
-function handleUploadFromInput(event) {
-  var file = event.target.files && event.target.files[0];
-  uploadInput.value = "";
-  if (!file || !currentThemeId) return;
-  if (!file.type || file.type.indexOf("image/") !== 0) {
-    setStatus("画像ファイルを選んでください。");
-    return;
-  }
-  if (file.size > 20 * 1024 * 1024) {
-    setStatus("画像が大きすぎます（20MBまで）。");
-    return;
-  }
-  var reader = new FileReader();
-  reader.onerror = function () { setStatus("画像の読み込みに失敗しました。"); };
-  reader.onload = function () {
-    var img = new Image();
-    img.onerror = function () { setStatus("画像を開けませんでした。別の画像でお試しください。"); };
-    img.onload = function () {
-      var MAX = 2048; // スマホの大きい写真はここで縮小(メモリ対策)
-      var src = reader.result;
-      var longest = Math.max(img.naturalWidth, img.naturalHeight);
-      if (longest > MAX) {
-        var r = MAX / longest;
-        var c = document.createElement("canvas");
-        c.width = Math.round(img.naturalWidth * r);
-        c.height = Math.round(img.naturalHeight * r);
-        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-        src = c.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.92);
-      }
-      selectedImages[currentThemeId] = { src: src, type: "upload", posX: 50, posY: 20, scale: 100 };
-      renderThemeCards();
-      updateResult();
-      closeModal();
-      setStatus("読み込みました。位置と大きさを調整できます。", true);
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-/* ---------- プレビュー ---------- */
-function formatDate(d) {
-  return d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
-}
-function updateResult() {
-  var member = getCurrentMember();
-  var userName = document.getElementById("userNameInput").value.trim() || "muze";
-  resultTitle.innerHTML = member.name + "<br>VISUAL";
-  selectedByEl.textContent = "selected by " + userName;
-  madeDateEl.textContent = formatDate(new Date());
-  collageGrid.innerHTML = "";
-  themes.forEach(function (theme) {
-    var item = document.createElement("div");
-    item.className = "collage-item";
-    var selected = selectedImages[theme.id];
-    if (selected && selected.src) {
-      var img = document.createElement("img");
-      img.src = selected.src;
-      img.alt = theme.label;
-      if (selected.type === "upload") img.style.cssText += getImageAdjustStyle(selected);
-      item.appendChild(img);
-    } else {
-      var ph = document.createElement("div");
-      ph.className = "collage-placeholder";
-      ph.innerHTML = theme.label + "<br>未選択";
-      item.appendChild(ph);
-    }
-    collageGrid.appendChild(item);
-  });
-  updateProgress();
-}
-
-/* ---------- Canvas ヘルパー ---------- */
-function canvasToBlob(canvas) {
-  return new Promise(function (resolve, reject) {
-    canvas.toBlob(function (blob) {
-      if (blob) resolve(blob); else reject(new Error("Blob creation failed"));
-    }, "image/png");
-  });
-}
-function loadCanvasImage(src) {
-  return new Promise(function (resolve) {
-    var image = new Image();
-    image.onload = function(){ resolve(image); };
-    image.onerror = function(){ resolve(null); };
-    image.src = src;
-  });
-}
-function roundedRectPath(ctx, x, y, w, h, r) {
-  r = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-function drawCoverImage(ctx, image, x, y, w, h, selected) {
-  if (!image) {
-    ctx.save();
-    roundedRectPath(ctx, x, y, w, h, 22);
-    ctx.clip();
-    var g = ctx.createLinearGradient(x, y, x + w, y + h);
-    g.addColorStop(0, "#fff0f7");
-    g.addColorStop(1, "#fffaf0");
-    ctx.fillStyle = g;
-    ctx.fillRect(x, y, w, h);
-    ctx.restore();
-    return;
-  }
-  var a = adjustDefaults(selected && selected.type === "upload" ? selected : { posY: 0 });
-  // プリセットは現行と同じ「上寄せcover」(posY=0扱い)
-  if (!selected || selected.type !== "upload") a = { posX: 50, posY: 0, scale: 100 };
-  var base = Math.max(w / image.naturalWidth, h / image.naturalHeight) * (a.scale / 100);
-  var dw = image.naturalWidth * base;
-  var dh = image.naturalHeight * base;
-  var dx = x + (w - dw) * (a.posX / 100);
-  var dy = y + (h - dh) * (a.posY / 100);
-  ctx.save();
-  roundedRectPath(ctx, x, y, w, h, 22);
-  ctx.clip();
-  ctx.drawImage(image, dx, dy, dw, dh);
-  ctx.fillStyle = "rgba(255,255,255,0.10)";
-  ctx.fillRect(x, y, w, h);
-  ctx.restore();
-}
-function drawRotatedImage(ctx, image, x, y, w, deg) {
-  if (!image) return;
-  var h = w * (image.naturalHeight / image.naturalWidth);
-  ctx.save();
-  ctx.translate(x + w / 2, y + h / 2);
-  ctx.rotate(deg * Math.PI / 180);
-  ctx.drawImage(image, -w / 2, -h / 2, w, h);
-  ctx.restore();
-}
-
-/* ---------- 保存画像を描く(白フチ+日付つきプリント) ---------- */
-var UI_FONT = "system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif";
-var HAND_FONT = "'Klee One','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif";
-
-async function createManualResultCanvas() {
-  var member = getCurrentMember();
-  var userName = (document.getElementById("userNameInput").value.trim()) || "muze";
-  var W = 1200, H = 1200, BORDER = 26;
-  var canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  var ctx = canvas.getContext("2d");
-
-  // 手書きフォントが読めていれば日付・名前に使う(失敗しても続行)
-  try { await document.fonts.load("600 30px 'Klee One'"); } catch (e) {}
-
-  // 白フチ(プリント写真)
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, W, H);
-
-  // 中身(角は写真らしくスクエア)
-  var IX = BORDER, IY = BORDER, IW = W - BORDER * 2, IH = H - BORDER * 2;
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(IX, IY, IW, IH);
-  ctx.clip();
-
-  var bg = ctx.createLinearGradient(0, IY, 0, IY + IH);
-  if (currentBgThemeId === "soda") {
-    bg.addColorStop(0, "#fbfeff"); bg.addColorStop(.56, "#eef8ff"); bg.addColorStop(1, "#fff7fb");
-  } else if (currentBgThemeId === "classic") {
-    bg.addColorStop(0, "#fffaf3"); bg.addColorStop(.58, "#f5e8dc"); bg.addColorStop(1, "#fff7ee");
-  } else {
-    bg.addColorStop(0, "#fffafd"); bg.addColorStop(.58, "#fff1f7"); bg.addColorStop(1, "#fff8ef");
-  }
-  ctx.fillStyle = bg;
-  ctx.fillRect(IX, IY, IW, IH);
-
-  var r1 = ctx.createRadialGradient(150, 90, 0, 150, 90, 420);
-  r1.addColorStop(0, currentBgThemeId === "soda" ? "rgba(199,237,255,.95)" : currentBgThemeId === "classic" ? "rgba(244,214,196,.95)" : "rgba(255,188,216,.95)");
-  r1.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = r1;
-  ctx.fillRect(IX, IY, IW, IH);
-
-  var r2 = ctx.createRadialGradient(1030, 70, 0, 1030, 70, 420);
-  r2.addColorStop(0, currentBgThemeId === "classic" ? "rgba(255,246,228,.92)" : "rgba(239,226,255,.90)");
-  r2.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = r2;
-  ctx.fillRect(IX, IY, IW, IH);
-  ctx.restore();
-
-  // 素材
-  var hb = HAND_ASSETS;
-  var loaded = await Promise.all([
-    loadCanvasImage(hb + "/my-favorite.png"),
-    loadCanvasImage(hb + "/heart.png"),
-    loadCanvasImage(hb + "/numa.png"),
-    loadCanvasImage(hb + "/current-best.png"),
-    loadCanvasImage(hb + "/cute.png"),
-    loadCanvasImage(hb + "/cool.png"),
-    loadCanvasImage(hb + "/zurui.png"),
-    loadCanvasImage(hb + "/legend.png")
-  ]);
-  var kicker = loaded[0], heart = loaded[1], numa = loaded[2], best = loaded[3],
-      cute = loaded[4], cool = loaded[5], danger = loaded[6], legend = loaded[7];
-
-  if (kicker) drawRotatedImage(ctx, kicker, 54, 66, 214, -5);
-
-  // タイトル
-  ctx.save();
-  ctx.fillStyle = currentBgThemeId === "soda" ? "#27344f" : currentBgThemeId === "classic" ? "#46322d" : "#3a2531";
-  ctx.shadowColor = "rgba(255,255,255,.92)";
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetY = 3;
-  ctx.font = "900 74px " + UI_FONT;
-  ctx.textBaseline = "top";
-  ctx.fillText(member.name, 54, 158);
-  ctx.fillText("VISUAL", 54, 228);
-  ctx.restore();
-
-  // 3×2グリッド(現行と同寸)
-  var itemW = 360, itemH = 360;
-  var gridX = (W - itemW * 3) / 2;  // 60
-  var gridY = 336;
-  var imgs = await Promise.all(themes.map(function (theme) {
-    var s = selectedImages[theme.id];
-    return s && s.src ? loadCanvasImage(s.src) : Promise.resolve(null);
-  }));
-
-  themes.forEach(function (theme, i) {
-    var col = i % 3, row = Math.floor(i / 3);
-    var x = gridX + col * itemW, y = gridY + row * itemH;
-    ctx.save();
-    ctx.fillStyle = "rgba(255,255,255,.76)";
-    roundedRectPath(ctx, x, y, itemW, itemH, 22);
-    ctx.fill();
-    ctx.restore();
-    drawCoverImage(ctx, imgs[i], x, y, itemW, itemH, selectedImages[theme.id]);
-  });
-
-  // 手書きラベル(各コマの下端に乗る。下段は見切れ余裕を確保)
-  var labelYTop = gridY + itemH - 46;
-  var labelYBottom = gridY + itemH * 2 - 70;
-  drawRotatedImage(ctx, numa,   gridX + itemW * 0 + 34,  labelYTop,      itemW * 0.42, -6);
-  drawRotatedImage(ctx, best,   gridX + itemW * 1 + 82,  labelYTop - 6,  itemW * 0.50,  3);
-  drawRotatedImage(ctx, cute,   gridX + itemW * 2 + 176, labelYTop - 2,  itemW * 0.40, -4);
-  drawRotatedImage(ctx, cool,   gridX + itemW * 0 + 46,  labelYBottom,   itemW * 0.40,  4);
-  drawRotatedImage(ctx, danger, gridX + itemW * 1 + 96,  labelYBottom - 6, itemW * 0.52, -3);
-  drawRotatedImage(ctx, legend, gridX + itemW * 2 + 176, labelYBottom,   itemW * 0.40,  3);
-  if (heart) {
-    ctx.globalAlpha = 0.45;
-    drawRotatedImage(ctx, heart, 80, 288, 44, -14);
-    ctx.globalAlpha = 1;
-  }
-
-  // selected by + 日付(手書き)
-  var softInk = currentBgThemeId === "soda" ? "rgba(39,52,79,.62)" : currentBgThemeId === "classic" ? "rgba(70,50,45,.62)" : "rgba(53,37,47,.66)";
-  ctx.save();
-  ctx.fillStyle = softInk;
-  ctx.textAlign = "right";
-  ctx.textBaseline = "top";
-  ctx.font = "600 26px " + HAND_FONT;
-  ctx.fillText(("selected by " + userName).toLowerCase(), W - BORDER - 12, 1078);
-  ctx.globalAlpha = .85;
-  ctx.font = "400 19px " + HAND_FONT;
-  ctx.fillText(formatDate(new Date()), W - BORDER - 12, 1114);
-  ctx.restore();
-
-  return canvas;
-}
-
-/* ---------- 保存(共有シート→ダウンロード→スクショ案内) ---------- */
-async function saveResultImage() {
-  var member = getCurrentMember();
-  var originalText = saveBtn.textContent;
-  var fileName = "oshi-visual-6-" + member.id + ".png";
-
-  saveBtn.disabled = true;
-  saveBtn.textContent = "画像を作成中…";
-  setStatus("画像を作成中…", true);
-
-  try {
-    var canvas = await createManualResultCanvas();
-    var blob = await canvasToBlob(canvas);
-    var file = new File([blob], fileName, { type: "image/png" });
-
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ title: "推しビジュ6選", text: "推しビジュ6選を作ったよ", files: [file] });
-        setStatus("共有シートを開きました。", true);
-        stampTape();
-        return;
-      } catch (shareError) {
-        if (shareError && shareError.name === "AbortError") {
-          setStatus("共有をキャンセルしました。", true);
-          return;
-        }
-        // 共有自体の失敗はダウンロードへ
-      }
-    }
-
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-    setStatus("画像を保存しました。", true);
-    stampTape();
-  } catch (error) {
-    console.error(error);
-    setStatus("画像の保存に失敗しました。うまくいかない場合はプレビューをスクリーンショットしてください。");
-  } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = originalText;
-  }
-}
-
-function stampTape() {
-  tapeB.classList.remove("stamped");
-  // 再生し直せるように1フレーム外す
-  window.requestAnimationFrame(function () {
-    window.requestAnimationFrame(function () { tapeB.classList.add("stamped"); });
-  });
-}
-
-function setStatus(message, ok) {
-  statusEl.textContent = message || "";
-  statusEl.classList.toggle("ok", !!ok);
-  if (!message) return;
-  window.clearTimeout(setStatus.timer);
-  setStatus.timer = window.setTimeout(function(){ statusEl.textContent = ""; }, 3500);
-}
-
-})();
-</script>
+<script src="assets/js/app.js"></script>
 </body>
 </html>
