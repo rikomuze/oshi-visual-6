@@ -1,72 +1,38 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>推しビジュ6選 | MUZE TOOL BOX</title>
-  <meta name="description" content="6つのテーマで推しの好きなビジュを選んで、タグ画っぽい1枚を作れるメーカーです。" />
-  <meta property="og:title" content="推しビジュ6選" />
-  <meta property="og:description" content="6つのテーマで選ぶだけ。推しの好きなビジュを、可愛く1枚に。" />
-  <meta property="og:type" content="website" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MAZZEL Best Visual 9 - Performance Costume</title>
+  <meta name="description" content="好きなパフォーマンス衣装を選んでベストビジュを作れます">
+  <meta property="og:title" content="MAZZEL Best Visual 9 - Performance Costume">
+  <meta property="og:description" content="好きなパフォーマンス衣装を選んでベストビジュを作れます">
+  <meta property="og:image" content="https://rikomuze.github.io/mazzel-best-visual-performance/og.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- 結果画像でも使うフォント(4ファミリー): Zen Kaku Gothic New(日本語) / Klee One(日本語手書き) / Montserrat(欧文サンセリフ) / DM Serif Display(欧文セリフ・英字専用) -->
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Klee+One:wght@400;600&family=Montserrat:wght@500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
   /* =====================================================================
-     推しビジュ6選 — MUZE TOOL BOX「作業机」ブランド版 v3
-     ・結果画像は3デザイン(スクラップ/アーカイブ/証明写真)
-     ・プレビュー = 保存画像(同じCanvas描画関数を共用、ズレなし)
+     最強9マス — MUZE TOOL BOX「作業机」ブランド版
+     机の上の“ベタ焼き(コンタクトシート)”。炭色のシートに9コマが並び、
+     コマを直接タップして差し替える。編集画面=保存される画像。
+     6選(白フチのプリント/いちご)との兄弟だが、こちらは炭色/ミント担当。
      ===================================================================== */
-  /* 手書きフォント「花とちょうちょ」(スクラップの写真下6ラベル専用) */
-  @font-face {
-    font-family: "HanaToChoucho";
-    src: url("assets/fonts/hana-to-choucho.ttf") format("truetype");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
   :root{
     --desk:#f1ebe1;
     --paper:#ffffff;
     --pencil:#40382f;
     --faded:#8f8577;
-    --red-pencil:#c0472f;
-    --tape-berry:rgba(226,122,148,.85);
-    --tape-berry-solid:#e27a94;
+        --sheet:#F4E8E2;            /* ピンクベージュのコンタクトシート */
+        --sheet-ink:#40382f;
+        --sheet-soft:rgba(64,56,47,.58);
+        --mint:#D8A6A8;             /* ピンクベージュ用アクセント */
+        --mint-bright:#D8A6A8;      /* 紙上でなじむピンク */
     --tape-mint:rgba(164,197,175,.85);
-    /* フォント統一(Canvas側 app.js の F と同一定義)
-       HanaToChoucho(花とちょうちょ)はスクラップの写真下6ラベル専用。
-       UI・共通ヘッダー・他デザインには使用しない。 */
-    --font-jp:
-      "Zen Kaku Gothic New",
-      "Noto Sans JP",
-      "Hiragino Sans",
-      "Yu Gothic",
-      sans-serif;
-    --font-jp-hand:
-      "HanaToChoucho",
-      "Klee One",
-      "Zen Kaku Gothic New",
-      sans-serif; /* スクラップの6ラベル専用 */
-    --font-jp-klee:
-      "Klee One",
-      "Zen Kaku Gothic New",
-      "Hiragino Sans",
-      sans-serif; /* UIの手書き風はこちら(花とちょうちょは使わない) */
-    --font-en-sans:
-      "Montserrat",
-      "Helvetica Neue",
-      Arial,
-      sans-serif;
-    --font-en-serif:
-      "DM Serif Display",
-      Georgia,
-      serif; /* 欧文専用。日本語には使用しない */
-    /* 旧名エイリアス(既存CSS互換。UIは Klee 系のまま) */
-    --hand:var(--font-jp-klee);
-    --gothic:var(--font-jp);
-    --obj-shadow:0 10px 24px rgba(64,56,47,.18);
+    --tape-berry:rgba(226,122,148,.85);
+    --hand:"Klee One","Hiragino Maru Gothic ProN","Yu Gothic",cursive;
+    --gothic:"Zen Kaku Gothic New","Hiragino Sans",sans-serif;
+    --obj-shadow:0 12px 28px rgba(64,56,47,.20);
     --dash:1.5px dashed rgba(64,56,47,.35);
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -79,64 +45,15 @@
     font-family:var(--gothic);
     line-height:1.85;
     -webkit-text-size-adjust:100%;
-    padding-bottom:110px; /* 下部ドックの分 */
+    padding-bottom:110px;
   }
   img{display:block;max-width:100%}
   a{color:inherit;text-decoration:none}
-  button,input{font-family:inherit;color:inherit}
-  .shell{max-width:980px;margin:0 auto;padding:0 16px}
-  :focus-visible{outline:2.5px solid var(--tape-berry-solid);outline-offset:3px}
+  button{font-family:inherit;color:inherit}
+  .shell{max-width:760px;margin:0 auto;padding:0 16px}
+  :focus-visible{outline:2.5px solid var(--mint);outline-offset:3px}
 
-  /* =====================================================================
-     共通ヘッダー(MUZE TOOL BOX 全ツール共通ナビ)
-     紙のインデックスタブが机の縁に並んでいるイメージ。
-     ▼リンクURLはこの下のHTML(<nav class="global-nav">内)で差し替えられます
-     ===================================================================== */
-  .global-nav{
-    background:rgba(255,255,255,.6);
-    border-bottom:var(--dash);
-    backdrop-filter:blur(3px);
-  }
-  .global-nav-inner{
-    max-width:980px;margin:0 auto;
-    display:flex;align-items:flex-end;gap:6px;
-    padding:10px 16px 0;
-    overflow-x:auto;                /* スマホは横スクロール */
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
-  }
-  .global-nav-inner::-webkit-scrollbar{display:none}
-  .gnav-tab{
-    flex:0 0 auto;
-    display:inline-block;
-    padding:7px 13px 8px;
-    font-family:var(--hand);
-    font-weight:600;
-    font-size:12.5px;
-    letter-spacing:.05em;
-    white-space:nowrap;
-    background:var(--paper);
-    border:1.5px solid rgba(64,56,47,.22);
-    border-bottom:0;
-    transform:rotate(-.6deg);
-    position:relative;
-    top:1px;
-  }
-  .gnav-tab:nth-child(2n){transform:rotate(.6deg)}
-  .gnav-tab.gnav-home{
-    background:var(--pencil);color:var(--desk);
-    border-color:var(--pencil);
-  }
-  .gnav-tab.is-current{
-    border-color:var(--pencil);
-    box-shadow:inset 0 -3px 0 var(--tape-berry-solid);
-  }
-  @media(min-width:900px){
-    .global-nav-inner{overflow:visible;justify-content:flex-start;gap:8px}
-    .gnav-tab{font-size:13px;padding:8px 16px 9px}
-  }
-
-  /* ---------- ページ見出し ---------- */
+  /* ---------- 共通ヘッダー(6選と同一) ---------- */
   .site-head{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
     padding:18px 0 4px;
@@ -161,13 +78,61 @@
     top:-7px;left:-12px;
     transform:rotate(-12deg);
   }
-  .sticker b{font-weight:600}
-  .sticker span{color:var(--tape-berry-solid)}
-  .site-head .here{
-    font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--faded);
+  .sticker span{color:#e27a94}
+  .site-head .here{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--faded)}
+
+  .tool-nav{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:6px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    max-width:760px;
+    padding:6px 2px 10px;
+  }
+  .tool-nav::-webkit-scrollbar{display:none}
+  .tool-nav a{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:38px;
+    padding:8px 12px;
+    background:rgba(255,255,255,.58);
+    border:1px solid rgba(64,56,47,.16);
+    box-shadow:0 4px 12px rgba(64,56,47,.08);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:var(--faded);
+    transform:rotate(.2deg);
+  }
+  .tool-nav a:nth-child(2n){transform:rotate(-.4deg)}
+  .tool-nav a.active{
+    color:var(--pencil);
+    background:var(--paper);
+    position:relative;
+  }
+  .tool-nav a.active::before{
+    content:"";
+    position:absolute;
+    width:32px;
+    height:8px;
+    background:var(--tape-berry);
+    top:-5px;
+    left:50%;
+    transform:translateX(-50%) rotate(-3deg);
+  }
+  @media(max-width:760px){
+    .site-head{display:block}
+    .site-head .sticker{margin-bottom:10px}
+    .tool-nav{justify-content:flex-start;max-width:100%;padding-bottom:6px}
   }
 
-  .intro{padding:18px 0 6px}
+  /* ---------- 見出し ---------- */
+  .intro{padding:18px 0 10px}
   .intro h1{
     font-family:var(--hand);
     font-weight:600;
@@ -176,249 +141,158 @@
     line-height:1.3;
     transform:rotate(-.6deg);
   }
-  .intro h1 em{
-    font-style:normal;
-    border-bottom:3px solid var(--tape-berry);
-  }
+  .intro h1 em{font-style:normal;border-bottom:3px solid var(--tape-berry)}
   .intro .lede{font-size:13px;color:var(--faded);margin-top:6px}
-  .intro .caution{
-    display:inline-block;
-    margin-top:4px;
-    font-family:var(--hand);
-    font-size:12.5px;
-    color:var(--red-pencil);
-    transform:rotate(-.4deg);
-  }
 
-  /* ---------- だれの6枚?(名札) ---------- */
-  .who{margin-top:18px}
-  .who>h2{
-    font-family:var(--hand);font-weight:600;font-size:17px;
-    letter-spacing:.06em;margin-bottom:10px;
-  }
-  .tags{
-    display:flex;
-    flex-wrap:wrap;
-    gap:14px 10px;
-    padding:12px 2px 6px;
-  }
-  .tag{
-    flex:0 0 auto;
-    min-height:48px;
-    padding:10px 16px;
-    background:var(--paper);
-    border:1.5px solid rgba(64,56,47,.25);
-    font-weight:700;
-    font-size:14px;
-    letter-spacing:.1em;
-    cursor:pointer;
+  /* ---------- コンタクトシート(編集画面=完成画像) ---------- */
+  .sheet-wrap{
     position:relative;
-    transform:rotate(-.8deg);
+    margin-top:14px;
+    padding:14px 0 0;
   }
-  .tag:nth-child(2n){transform:rotate(.9deg)}
-  .tag[aria-pressed="true"]{
-    border-color:var(--pencil);
-    box-shadow:var(--obj-shadow);
-  }
-  .tag[aria-pressed="true"]::before{
-    content:"";position:absolute;
-    width:40px;height:13px;
+  .sheet-wrap::before,
+  .sheet-wrap::after{
+    content:"";
+    position:absolute;
+    z-index:8;
+    width:72px;
+    height:20px;
     background:var(--tape-berry);
-    top:-7px;left:50%;
-    transform:translateX(-50%) rotate(-4deg);
+    top:4px;
+    opacity:.82;
+    box-shadow:0 3px 8px rgba(64,56,47,.08);
   }
+  .sheet-wrap::before{left:9%;transform:rotate(-6deg)}
+  .sheet-wrap::after{right:9%;transform:rotate(5deg)}
+  .sheet-wrap .tape-l,
+  .sheet-wrap .tape-r{display:none}
 
-  /* ---------- 台紙(6枠) ---------- */
-  .frames-head{
-    display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-    margin:20px 0 4px;
-  }
-  .frames-head h2{
-    font-family:var(--hand);font-weight:600;font-size:20px;letter-spacing:.05em;
-  }
-  .frames-head p{font-size:11.5px;color:var(--faded);text-align:right;line-height:1.6}
-  .frames{display:grid;gap:0}
-  .frame{
-    display:grid;
-    grid-template-columns:104px 1fr;
-    gap:14px;
-    align-items:start;
-    padding:16px 0 18px;
-    border-bottom:var(--dash);
-  }
-  .frame-slot{
-    width:104px;height:104px;
+  .sheet{
     position:relative;
-  }
-  .frame-slot .empty{
-    width:100%;height:100%;
-    border:var(--dash);
-    display:grid;place-items:center;
-    font-family:var(--hand);
-    font-size:12px;
-    color:var(--faded);
-    text-align:center;
-    line-height:1.6;
-    background:rgba(255,255,255,.35);
-    cursor:pointer;
-  }
-  .frame-slot .mini-print{
-    width:100%;height:100%;
-    background:var(--paper);
-    padding:5px;
+    background:
+      linear-gradient(rgba(64,56,47,.026) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(64,56,47,.026) 1px, transparent 1px),
+      var(--sheet);
+    background-size:18px 18px,18px 18px,auto;
+    padding:4.2% 4.2% 0;
+    border:1px solid rgba(64,56,47,.09);
     box-shadow:var(--obj-shadow);
-    transform:rotate(-1.2deg);
-    cursor:pointer;
-    border:0;
-    display:block;
+    overflow:hidden;
   }
-  .frame:nth-child(2n) .mini-print{transform:rotate(1.1deg)}
-  .frame-slot .mini-print img{
-    width:100%;height:100%;
-    object-fit:cover;object-position:center top;
-    transform-origin:center center;
+  .sheet::before{
+    content:"";
+    position:absolute;
+    inset:10px;
+    border:1px dashed rgba(64,56,47,.11);
+    pointer-events:none;
   }
-  .frame-slot .mini-print::before{
-    content:"";position:absolute;
-    width:34px;height:11px;
-    background:var(--tape-mint);
-    top:-6px;left:50%;
-    transform:translateX(-50%) rotate(-3deg);
-  }
-  .frame-body h3{
-    font-family:var(--hand);font-weight:600;
-    font-size:17px;letter-spacing:.05em;line-height:1.4;
-  }
-  .frame-body .state{
-    font-size:11.5px;color:var(--faded);margin:1px 0 8px;
-  }
-  .frame-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .btn{
-    min-height:44px;
-    padding:10px 15px;
-    font-size:13.5px;
+  .sheet::after{
+    content:"BEST VISUAL CONTACT SHEET";
+    position:absolute;
+    right:18px;
+    top:14px;
+    font-size:9px;
     font-weight:700;
-    letter-spacing:.02em;
-    cursor:pointer;
-    background:var(--paper);
-    border:1.5px solid var(--pencil);
+    letter-spacing:.16em;
+    color:rgba(64,56,47,.22);
   }
-  .btn.primary{background:var(--pencil);color:var(--desk);border-color:var(--pencil)}
-  .btn.primary:active{background:#2c261f}
-  .btn.quiet{
-    background:transparent;border:0;
-    color:var(--faded);
-    font-size:12.5px;
-    text-decoration:underline dashed rgba(64,56,47,.4);
-    text-underline-offset:4px;
-    padding:10px 6px;
+  .sheet-grid{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    column-gap:2.2%;
+    row-gap:0;
   }
-
-  /* ---------- 位置調整スライダー(アップロード時のみ) ---------- */
-  .adjust{
-    display:none;
-    margin-top:12px;
-    padding:12px 14px 14px;
-    border:var(--dash);
-    background:rgba(255,255,255,.45);
-    gap:10px;
+  .cell{
+    display:flex;
+    flex-direction:column;
+    min-width:0;
   }
-  .adjust.is-visible{display:grid}
-  .adjust label{
-    display:flex;justify-content:space-between;align-items:center;
-    font-family:var(--hand);
-    font-size:12px;font-weight:600;
-    margin-bottom:4px;
-  }
-  .adjust input[type="range"]{
+  .cell .shot{
+    position:relative;
+    display:block;
     width:100%;
-    accent-color:var(--tape-berry-solid);
+    padding:6px;
+    border:0;
+    background:var(--paper);
     cursor:pointer;
-    touch-action:pan-x;
-    min-height:28px;
+    margin-block:auto;
+    box-shadow:0 3px 10px rgba(64,56,47,.08);
   }
-
-  /* ---------- 仕上げ(デザイン・名前・プレビュー) ---------- */
-  .finish{margin-top:26px}
-  .finish>h2{
-    font-family:var(--hand);font-weight:600;font-size:20px;
-    letter-spacing:.05em;margin-bottom:12px;
+  .cell .shot::after{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px solid rgba(64,56,47,.07);
+    pointer-events:none;
   }
-  .finish-options{
-    display:grid;gap:14px;
-    margin-bottom:18px;
+  .cell .shot img{
+    width:100%;
+    aspect-ratio:3/4;
+    object-fit:cover;
+    object-position:center top;
   }
-  .opt-label{
-    font-family:var(--hand);font-size:13px;font-weight:600;
-    display:block;margin-bottom:6px;
-  }
-  .chips{display:flex;gap:10px;flex-wrap:wrap}
-  .chip{
-    min-height:44px;min-width:44px;
-    padding:9px 16px;
-    font-family:var(--hand);
-    font-weight:600;font-size:13.5px;
-    background:transparent;
-    border:1.5px solid var(--pencil);
-    border-radius:50%;
-    cursor:pointer;
-    transform:rotate(2deg);
-  }
-  .chip:nth-child(2){transform:rotate(-2deg)}
-  .chip:nth-child(3){transform:rotate(1.4deg)}
-  .chip[aria-pressed="true"]{background:var(--pencil);color:var(--desk)}
-  .chip-hint{font-size:11px;color:var(--faded);margin-top:6px;line-height:1.7}
-  .name-input{
-    width:100%;max-width:340px;
-    font-size:16px;               /* iOSのズーム防止 */
+  .cell.group .shot img{aspect-ratio:16/9}
+  .cell .shot .no{
+    position:absolute;
+    left:11px;
+    top:9px;
     font-family:var(--hand);
     font-weight:600;
-    background:transparent;
-    border:0;
-    border-bottom:var(--dash);
-    padding:8px 2px;
+    font-size:clamp(9px,2.4vw,12px);
+    color:var(--mint-bright);
+    letter-spacing:.1em;
+    text-shadow:0 1px 2px rgba(255,255,255,.7);
+    pointer-events:none;
   }
-  .name-input::placeholder{color:rgba(64,56,47,.35)}
-  .name-note{font-size:11px;color:var(--faded);margin-top:4px;line-height:1.7}
+  .cell .shot:active img{opacity:.85}
+  .cell .name{
+    font-size:clamp(8.5px,2.3vw,11px);
+    font-weight:700;
+    letter-spacing:.16em;
+    color:var(--pencil);
+    text-align:center;
+    padding:8px 0 13px;
+  }
 
-  /* プリント(完成プレビューの紙)
-     中身は保存画像と同一のCanvas。CSSで縮小表示するだけなのでズレない。 */
-  .print{
-    background:var(--paper);
-    padding:2.2%;
-    box-shadow:var(--obj-shadow);
-    transform:rotate(-.8deg);
+  /* シート下端のキャプション(保存画像と同じ) */
+  .sheet-caption{
     position:relative;
-    width:min(100%,560px);
-    margin:8px auto 0;
+    z-index:1;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+    padding:5px 2px 15px;
+    border-top:1px dashed rgba(64,56,47,.11);
   }
-  .print .tape-a{
-    position:absolute;z-index:9;
-    width:64px;height:19px;
-    background:var(--tape-berry);
-    top:-9px;left:14%;
-    transform:rotate(-7deg);
+  .sheet-caption .title{
+    font-family:var(--hand);
+    font-weight:600;
+    font-size:clamp(17px,4.6vw,24px);
+    letter-spacing:.08em;
+    color:var(--pencil);
+    transform:rotate(-1.2deg);
   }
-  .print .tape-b{
-    position:absolute;z-index:9;
-    width:56px;height:18px;
-    background:var(--tape-mint);
-    top:-8px;right:12%;
-    transform:rotate(5deg) scale(0);
-  }
-  .print .tape-b.stamped{transform:rotate(5deg) scale(1)}
-  @media(prefers-reduced-motion:no-preference){
-    .print .tape-b{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
-  }
-  #previewCanvas{
-    display:block;
-    width:100%;
-    height:auto;
-    aspect-ratio:1/1;
-    background:#fff;
+  .sheet-caption .meta{
+    font-family:var(--hand);
+    font-size:clamp(9px,2.4vw,12px);
+    color:var(--sheet-soft);
+    letter-spacing:.12em;
+    white-space:nowrap;
   }
 
-  /* ---------- 下部ドック(進み具合+保存) ---------- */
+  .sheet-hint{
+    margin-top:10px;
+    font-family:var(--hand);
+    font-size:13px;
+    font-weight:600;
+    color:var(--faded);
+    text-align:center;
+  }
+
+  /* ---------- 下部ドック ---------- */
   .dock{
     position:fixed;left:0;right:0;bottom:0;z-index:60;
     background:var(--paper);
@@ -426,18 +300,24 @@
     padding:10px 16px calc(10px + env(safe-area-inset-bottom));
   }
   .dock-inner{
-    max-width:980px;margin:0 auto;
-    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    max-width:760px;margin:0 auto;
+    display:flex;align-items:center;gap:12px;
   }
-  .dock .progress{
+  .chip-btn{
+    min-height:52px;
+    padding:10px 16px;
     font-family:var(--hand);
-    font-weight:600;font-size:15px;
-    letter-spacing:.04em;
+    font-weight:600;font-size:14px;
+    background:transparent;
+    border:1.5px solid var(--pencil);
+    border-radius:50%;          /* 手描きの丸囲み */
+    cursor:pointer;
+    transform:rotate(-2deg);
     white-space:nowrap;
   }
-  .dock .progress.done{color:var(--tape-berry-solid)}
+  .chip-btn:active{background:var(--pencil);color:var(--desk)}
   .save-btn{
-    flex:1;max-width:300px;
+    flex:1;
     min-height:52px;
     background:var(--pencil);
     color:var(--desk);
@@ -447,18 +327,27 @@
   }
   .save-btn:disabled{opacity:.55;cursor:default}
   .status{
-    max-width:980px;margin:6px auto 0;
+    max-width:760px;margin:6px auto 0;
     min-height:1.3em;
     font-family:var(--hand);
     font-size:12px;font-weight:600;
-    color:var(--red-pencil);
+    color:#c0472f;
     text-align:center;
   }
   .status.ok{color:var(--pencil)}
 
   /* ---------- フッター(メモ) ---------- */
+  .back-desk{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    margin:36px auto 10px;
+    font-family:var(--hand);
+    font-weight:600;font-size:15px;
+    width:fit-content;
+    padding:10px 6px;
+  }
+  .back-desk svg{width:34px;height:18px;stroke:var(--pencil);fill:none;stroke-width:1.8;stroke-linecap:round}
   .memo{
-    margin:44px auto 26px;
+    margin:0 auto 26px;
     max-width:520px;
     background:var(--paper);
     padding:18px 20px 20px;
@@ -470,25 +359,16 @@
   .memo::before{
     content:"";position:absolute;
     width:64px;height:18px;
-    background:var(--tape-mint);
+    background:var(--tape-berry);
     top:-9px;left:50%;
     transform:translateX(-50%) rotate(-2deg);
   }
   .memo small{display:block;color:var(--faded);margin-top:6px}
-  .back-desk{
-    display:flex;align-items:center;justify-content:center;gap:8px;
-    margin:0 auto 10px;
-    font-family:var(--hand);
-    font-weight:600;font-size:15px;
-    width:fit-content;
-    padding:10px 6px;
-  }
-  .back-desk svg{width:34px;height:18px;stroke:var(--pencil);fill:none;stroke-width:1.8;stroke-linecap:round}
 
-  /* ---------- 候補モーダル(ボトムシート) ---------- */
+  /* ---------- 候補モーダル(6選と同じ作法) ---------- */
   .modal{
     position:fixed;inset:0;z-index:100;
-    background:rgba(64,56,47,.45);
+    background:rgba(64,56,47,.32);
     display:none;align-items:flex-end;justify-content:center;
   }
   .modal.active{display:flex}
@@ -498,7 +378,7 @@
     -webkit-overflow-scrolling:touch;
     background:var(--paper);
     padding:18px 16px calc(24px + env(safe-area-inset-bottom));
-    box-shadow:0 -12px 30px rgba(64,56,47,.25);
+    box-shadow:0 -12px 30px rgba(43,39,35,.3);
   }
   .modal-header{
     display:flex;justify-content:space-between;align-items:center;gap:12px;
@@ -518,138 +398,71 @@
   .photo-grid{
     display:grid;
     grid-template-columns:repeat(4,1fr);
-    gap:9px;margin-bottom:16px;
+    gap:9px;
   }
   @media(max-width:520px){.photo-grid{grid-template-columns:repeat(3,1fr)}}
   .photo-option{
     position:relative;padding:3px;border:0;
     background:var(--paper);
     box-shadow:0 4px 12px rgba(64,56,47,.14);
-    aspect-ratio:1/1;cursor:pointer;
+    cursor:pointer;
   }
-  .photo-option img{width:100%;height:100%;object-fit:cover;object-position:center top}
-  .photo-option.is-selected{outline:3px solid var(--tape-berry-solid);outline-offset:2px}
+  .photo-option img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top}
+  .photo-option.wide img{aspect-ratio:16/9}
+  .photo-option.is-selected{outline:3px solid var(--mint);outline-offset:2px}
   .photo-option.is-selected::after{
     content:"✓";position:absolute;right:4px;top:4px;
     width:20px;height:20px;display:grid;place-items:center;
-    background:var(--tape-berry-solid);color:#fff;
+    background:var(--mint);color:#fff;
     font-size:12px;font-weight:700;border-radius:50%;
   }
-  .modal-note{font-size:11px;color:var(--faded);text-align:center;margin-top:10px;line-height:1.7}
-  input[type="file"]{display:none}
-
-  /* ---------- 保存フォールバック(アプリ内ブラウザ用) ---------- */
-  .fallback-inner{
-    width:100%;max-width:560px;
-    max-height:92vh;overflow:auto;
-    background:var(--paper);
-    padding:18px 16px calc(24px + env(safe-area-inset-bottom));
-  }
-  .fallback-inner img{
-    width:100%;height:auto;
-    border:1px solid rgba(64,56,47,.2);
-    margin:10px 0;
-  }
-  .fallback-hint{
-    font-family:var(--hand);font-weight:600;
-    font-size:13.5px;text-align:center;line-height:1.9;
-  }
-  .fallback-hint b{color:var(--tape-berry-solid)}
 
   /* ---------- モーション ---------- */
   @media(prefers-reduced-motion:no-preference){
     .settle{opacity:0;transform:translateY(12px);transition:opacity .55s ease,transform .55s ease}
     .settle.in{opacity:1;transform:none}
-    .print.settle{transform:translateY(12px) rotate(0deg)}
-    .print.settle.in{transform:rotate(-.8deg)}
-  }
-
-  /* ---------- PCは2カラム ---------- */
-  @media(min-width:900px){
-    .app-grid{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:28px;align-items:start}
-    .finish{margin-top:0;position:sticky;top:20px}
-    .frames-head{margin-top:0}
   }
   </style>
 </head>
 <body>
-
-<!-- =====================================================================
-     共通ヘッダー(MUZE TOOL BOX ナビ)
-     ▼リンクURLの差し替えはここ。href="#" は仮リンクです。
-     ===================================================================== -->
-<nav class="global-nav" aria-label="MUZE TOOL BOX のツール">
-  <div class="global-nav-inner">
-    <!-- TOP: MUZE TOOL BOX トップページ -->
-    <a class="gnav-tab gnav-home" href="https://rikomuze.github.io/muze-tool-box/">TOP / MUZE TOOL BOX</a>
-    <!-- 推しビジュ6選(このページ) -->
-    <a class="gnav-tab is-current" href="./" aria-current="page">推しビジュ6選</a>
-    <!-- 最強9マス: URLが決まったら href を差し替え -->
-    <a class="gnav-tab" href="#">最強9マス</a>
-    <!-- グッズ計算機: URLが決まったら href を差し替え -->
-    <a class="gnav-tab" href="#">グッズ計算機</a>
-    <!-- オタク沼診断: URLが決まったら href を差し替え -->
-    <a class="gnav-tab" href="#">オタク沼診断</a>
-    <!-- チケット解説: URLが決まったら href を差し替え -->
-    <a class="gnav-tab" href="#">チケット解説</a>
-  </div>
-</nav>
 
 <div class="shell">
   <header class="site-head">
     <a class="sticker" href="https://rikomuze.github.io/muze-tool-box/">
       <b>Muze Tool Box</b> <span>♡</span>
     </a>
-    <span class="here">推しビジュ6選</span>
+    <nav class="tool-nav" aria-label="MUZE TOOL BOX 共通ナビ">
+      <a href="https://rikomuze.github.io/muze-tool-box/">TOP</a>
+      <a href="https://rikomuze.github.io/oshi-visual-6/">推しビジュ6選</a>
+      <a href="https://rikomuze.github.io/mazzel-best-visual/">最強9マス</a>
+      <a href="https://rikomuze.github.io/mazzel-best-visual-performance/" class="active">パフォ衣装</a>
+      <a href="https://rikomuze.github.io/mazzel-goods-calculator/">グッズ計算機</a>
+      <a href="https://rikomuze.github.io/otaku-numa-shindan/">オタク沼診断</a>
+      <a href="https://abaft-conga-f54.notion.site/fanmeating?pvs=74">チケット解説</a>
+    </nav>
   </header>
 
   <section class="intro">
-    <h1>推しビジュ<em>6選</em></h1>
-    <p class="lede">6つのテーマでお気に入りの写真を選んでね。</p>
-    <p class="caution">※アップロードする際は、画像の権利に注意！（写真集ソロショットはNGです）</p>
+    <h1>最強<em>9マス</em><br>パフォ衣装編</h1>
+    <p class="lede">コマをタップして、好きなパフォーマンス衣装を選んでください。</p>
   </section>
 
-  <section class="who" aria-label="メンバーを選ぶ">
-    <h2>だれの6枚?</h2>
-    <div id="memberTags" class="tags" role="group" aria-label="メンバー"></div>
-  </section>
-
-  <div class="app-grid">
-    <section aria-label="テーマごとに写真を選ぶ">
-      <div class="frames-head">
-        <h2>台紙をうめる</h2>
-        <p>候補から選ぶか、<br>自分の画像も追加OK</p>
+  <main class="sheet-wrap settle" aria-label="9マスの編集">
+    <span class="tape-l" aria-hidden="true"></span>
+    <span class="tape-r" aria-hidden="true"></span>
+    <div class="sheet">
+      <div id="sheetGrid" class="sheet-grid"></div>
+      <div class="sheet-caption">
+        <span class="title">MY BEST 9</span>
+        <span class="meta">MAZZEL PERFORMANCE COSTUME — <span id="sheetDate"></span></span>
       </div>
-      <div id="themeList" class="frames"></div>
-    </section>
-
-    <section class="finish" aria-label="仕上げと保存">
-      <h2>しあげ</h2>
-      <div class="finish-options">
-        <div>
-          <span class="opt-label" id="designLabel">結果画像のデザイン</span>
-          <div id="designChips" class="chips" role="group" aria-labelledby="designLabel"></div>
-          <p id="designHint" class="chip-hint"></p>
-        </div>
-        <div>
-          <label class="opt-label" for="userNameInput">表示する推し名を入力（空欄なら選択中のメンバー名）</label>
-          <input id="userNameInput" class="name-input" type="text" placeholder="例: MY OSHI" maxlength="20" autocomplete="off">
-          <p class="name-note">MAZZEL以外の推しにも使えます。入力した名前が結果画像の名前部分に入ります。</p>
-        </div>
-      </div>
-
-      <div class="print settle" id="printWrap">
-        <span class="tape-a" aria-hidden="true"></span>
-        <span class="tape-b" id="tapeB" aria-hidden="true"></span>
-        <!-- プレビュー本体: 保存画像と同じ1200×1200のCanvasをそのまま縮小表示 -->
-        <canvas id="previewCanvas" width="1200" height="1200" aria-label="完成イメージのプレビュー"></canvas>
-      </div>
-    </section>
-  </div>
+    </div>
+  </main>
+  <p class="sheet-hint">↑ コマをタップすると差し替えられるよ</p>
 
   <a class="back-desk" href="https://rikomuze.github.io/muze-tool-box/">
     <svg viewBox="0 0 34 18" aria-hidden="true"><path d="M32 9 C22 9 14 9 4 9 M4 9 l7 -5 M4 9 l7 5"/></svg>
-    机にもどる
+    ホームに戻る
   </a>
 
   <footer class="memo">
@@ -658,41 +471,416 @@
   </footer>
 </div>
 
-<div class="dock" role="region" aria-label="保存">
+<div class="dock" role="region" aria-label="操作">
   <div class="dock-inner">
-    <span id="progress" class="progress">あと6枠</span>
-    <button id="saveBtn" class="save-btn" type="button">画像を保存する</button>
+    <button id="randomBtn" class="chip-btn" type="button">ランダム</button>
+    <button id="saveBtn" class="save-btn" type="button">画像保存</button>
   </div>
   <div id="status" class="status" aria-live="polite"></div>
 </div>
 
-<div id="photoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<div id="picker" class="modal" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
   <div class="modal-inner">
     <div class="modal-header">
-      <div id="modalTitle" class="modal-title">写真を選ぶ</div>
+      <div id="pickerTitle" class="modal-title">画像を選んでください</div>
       <button class="close-button" type="button" aria-label="閉じる">✕</button>
     </div>
-    <div id="modalPhotoGrid" class="photo-grid"></div>
-    <button id="modalUploadBtn" class="btn" type="button">画像をアップロード</button>
-    <p class="modal-note">候補にない写真は、自分の画像をアップロードできます。</p>
+    <div id="options" class="photo-grid"></div>
   </div>
 </div>
 
-<!-- 保存フォールバック: ダウンロードが使えないアプリ内ブラウザ(Xなど)では
-     画像を表示して長押し保存してもらう -->
-<div id="saveFallback" class="modal" role="dialog" aria-modal="true" aria-label="画像を長押しで保存">
-  <div class="fallback-inner">
-    <div class="modal-header">
-      <div class="modal-title">できあがり！</div>
-      <button id="fallbackClose" class="close-button" type="button" aria-label="閉じる">✕</button>
-    </div>
-    <p class="fallback-hint">この画像を<b>長押し</b>して「写真に保存」してね。<br>（アプリ内ブラウザでは自動保存ができないため）</p>
-    <img id="fallbackImage" alt="完成した推しビジュ6選の画像">
-  </div>
-</div>
+<script>
+/* =====================================================================
+   ロジック — 機能は現行版と同一(9コマ×候補15枚/初期01/ランダム/保存)。
+   変更点: html2canvasを撤去しCanvas直描きに(iOSでのscale:5無音失敗を根絶)、
+   PCは確実にダウンロード、共有キャンセルをエラー扱いしない、
+   ピッカーにESC・背景タップ・選択中マーク・遅延読み込みを追加。
+   ===================================================================== */
+(function () {
+"use strict";
 
-<input id="uploadInput" type="file" accept="image/*">
+/* ---------- データ：パフォーマンス衣装編も images/メンバー/01.png〜15.png を読む ---------- */
+var cells = [
+  { member: "kairyu", name: "KAIRYU" },
+  { member: "naoya",  name: "NAOYA" },
+  { member: "ran",    name: "RAN" },
+  { member: "seito",  name: "SEITO" },
+  { member: "group",  name: "MAZZEL" },
+  { member: "ryuki",  name: "RYUKI" },
+  { member: "takuto", name: "TAKUTO" },
+  { member: "hayato", name: "HAYATO" },
+  { member: "eiki",   name: "EIKI" }
+];
+var imageCounts = {
+  // 新しいアー写は各フォルダの15.pngに上書きすると、候補一覧の一番左上に表示されます。
+  kairyu: 15, naoya: 15, ran: 15, seito: 15, group: 15,
+  ryuki: 15, takuto: 15, hayato: 15, eiki: 15
+};
 
-<script src="assets/js/app.js"></script>
+/* ---------- 状態 ---------- */
+var selection = cells.map(function(){ return 1; }); // 各コマの選択番号(初期は01)
+var currentCellIndex = null;
+var lastFocused = null;
+
+/* ---------- 要素 ---------- */
+var sheetGrid = document.getElementById("sheetGrid");
+var picker = document.getElementById("picker");
+var pickerTitle = document.getElementById("pickerTitle");
+var options = document.getElementById("options");
+var closeButton = picker.querySelector(".close-button");
+var randomBtn = document.getElementById("randomBtn");
+var saveBtn = document.getElementById("saveBtn");
+var statusEl = document.getElementById("status");
+
+init();
+
+function init() {
+  document.getElementById("sheetDate").textContent = formatDate(new Date());
+  renderSheet();
+  randomBtn.addEventListener("click", randomize);
+  saveBtn.addEventListener("click", saveImage);
+  closeButton.addEventListener("click", closePicker);
+  picker.addEventListener("click", function (e) {
+    if (e.target === picker) closePicker();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && picker.classList.contains("active")) closePicker();
+  });
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, { threshold: .05 });
+    document.querySelectorAll(".settle").forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll(".settle").forEach(function (el) { el.classList.add("in"); });
+  }
+}
+
+function fileName(num) { return String(num).padStart(2, "0") + ".png"; }
+function srcFor(index) { return "images/" + cells[index].member + "/" + fileName(selection[index]); }
+function formatDate(d) {
+  return d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0");
+}
+
+/* ---------- シート描画(コマ全面がタップ範囲) ---------- */
+function renderSheet() {
+  sheetGrid.innerHTML = "";
+  cells.forEach(function (cell, index) {
+    var wrap = document.createElement("div");
+    wrap.className = "cell" + (cell.member === "group" ? " group" : "");
+
+    var shot = document.createElement("button");
+    shot.type = "button";
+    shot.className = "shot";
+    shot.setAttribute("aria-label", (index + 1) + "コマ目 " + cell.name + " の写真を変える");
+
+    var img = document.createElement("img");
+    img.src = srcFor(index);
+    img.alt = cell.name;
+
+    var no = document.createElement("span");
+    no.className = "no";
+    no.textContent = String(index + 1).padStart(2, "0");
+
+    shot.appendChild(img);
+    shot.appendChild(no);
+    shot.addEventListener("click", function(){ openPicker(index); });
+
+    var name = document.createElement("div");
+    name.className = "name";
+    name.textContent = cell.name;
+
+    wrap.appendChild(shot);
+    wrap.appendChild(name);
+    sheetGrid.appendChild(wrap);
+  });
+}
+
+function updateCellImage(index) {
+  var img = sheetGrid.children[index] && sheetGrid.children[index].querySelector("img");
+  if (img) img.src = srcFor(index);
+}
+
+/* ---------- ピッカー ---------- */
+function openPicker(index) {
+  currentCellIndex = index;
+  lastFocused = document.activeElement;
+  pickerTitle.textContent = cells[index].name + " の画像を選ぶ";
+  options.innerHTML = "";
+
+  var member = cells[index].member;
+  var count = imageCounts[member] || 0;
+  // 新しいアー写は既存の15.pngに上書きしてください。
+  // 候補一覧では15番を先頭に出し、その後に01〜14を並べます。
+  var order = [];
+  if (count >= 15) order.push(15);
+  for (var i = 1; i <= count; i++) {
+    if (i !== 15) order.push(i);
+  }
+  order.forEach(function (num) {
+    (function (num) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "photo-option" + (member === "group" ? " wide" : "");
+      var img = document.createElement("img");
+      img.src = "images/" + member + "/" + fileName(num);
+      img.alt = cells[index].name + " " + num;
+      img.loading = "lazy";
+      img.onerror = function(){ button.style.display = "none"; };
+      if (num === selection[index]) button.classList.add("is-selected");
+      button.appendChild(img);
+      button.addEventListener("click", function () {
+        selection[currentCellIndex] = num;
+        updateCellImage(currentCellIndex);
+        closePicker();
+      });
+      options.appendChild(button);
+    })(num);
+  });
+  picker.classList.add("active");
+  closeButton.focus();
+}
+function closePicker() {
+  picker.classList.remove("active");
+  options.innerHTML = "";
+  if (lastFocused && lastFocused.focus) lastFocused.focus();
+}
+
+/* ---------- ランダム ---------- */
+function randomize() {
+  cells.forEach(function (cell, index) {
+    var count = imageCounts[cell.member] || 1;
+    selection[index] = Math.floor(Math.random() * count) + 1;
+    updateCellImage(index);
+  });
+  setStatus("ランダムに並べました。", true);
+}
+
+/* ---------- Canvas 直描き(プレビューと同じベタ焼きを描く) ---------- */
+function loadCanvasImage(src) {
+  return new Promise(function (resolve) {
+    var image = new Image();
+    image.onload = function(){ resolve(image); };
+    image.onerror = function(){ resolve(null); };
+    image.src = src;
+  });
+}
+function canvasToBlob(canvas) {
+  return new Promise(function (resolve, reject) {
+    canvas.toBlob(function (blob) {
+      if (blob) resolve(blob); else reject(new Error("Blob creation failed"));
+    }, "image/png");
+  });
+}
+function drawCoverTop(ctx, img, x, y, w, h) {
+  if (!img) {
+    ctx.fillStyle = "#cbc1b4";
+    ctx.fillRect(x, y, w, h);
+    return;
+  }
+  var s = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  var dw = img.naturalWidth * s, dh = img.naturalHeight * s;
+  var dx = x + (w - dw) / 2;   // 左右センター
+  var dy = y;                  // 上寄せ(プレビューのobject-position:center topと同じ)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.drawImage(img, dx, dy, dw, dh);
+  ctx.restore();
+}
+
+var UI_FONT = "system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif";
+var HAND_FONT = "'Klee One','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif";
+
+async function createSheetCanvas() {
+  // レイアウト定数(1200幅・面積はiOS上限の約1/8で安全)
+  var W = 1200, P = 40, G = 14, LABEL = 34, FOOTER = 76;
+  var cw = (W - P * 2 - G * 2) / 3;          // コマ幅 364
+  var ch = cw * 4 / 3;                        // 縦コマ高 485.3
+  var gh = cw * 9 / 16;                       // 横長コマ高 204.75
+  var rowPitch = ch + LABEL + G;
+  var H = Math.round(P + rowPitch * 3 - G + FOOTER + P);
+
+  var canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  var ctx = canvas.getContext("2d");
+
+  try { await document.fonts.load("600 40px 'Klee One'"); } catch (e) {}
+
+  // ピンクベージュのコンタクトシート背景
+  ctx.fillStyle = "#F4E8E2";
+  ctx.fillRect(0, 0, W, H);
+
+  // うっすら方眼
+  ctx.save();
+  ctx.strokeStyle = "rgba(64,56,47,.030)";
+  ctx.lineWidth = 1;
+  for (var gx = 0; gx <= W; gx += 18) {
+    ctx.beginPath();
+    ctx.moveTo(gx, 0);
+    ctx.lineTo(gx, H);
+    ctx.stroke();
+  }
+  for (var gy = 0; gy <= H; gy += 18) {
+    ctx.beginPath();
+    ctx.moveTo(0, gy);
+    ctx.lineTo(W, gy);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 外枠と点線の内枠
+  ctx.save();
+  ctx.strokeStyle = "rgba(64,56,47,.07)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(8, 8, W - 16, H - 16);
+  ctx.setLineDash([7, 7]);
+  ctx.strokeStyle = "rgba(64,56,47,.12)";
+  ctx.strokeRect(20, 20, W - 40, H - 40);
+  ctx.restore();
+
+  // 小さな印字
+  ctx.save();
+  ctx.fillStyle = "rgba(64,56,47,.24)";
+  ctx.font = "700 16px " + UI_FONT;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "top";
+  ctx.fillText("BEST VISUAL CONTACT SHEET", W - 34, 26);
+  ctx.restore();
+
+  var images = await Promise.all(cells.map(function (c, i) { return loadCanvasImage(srcFor(i)); }));
+
+  cells.forEach(function (cell, index) {
+    var col = index % 3, row = Math.floor(index / 3);
+    var x = P + col * (cw + G);
+    var zoneY = P + row * rowPitch;
+    var isGroup = cell.member === "group";
+    var h = isGroup ? gh : ch;
+    var y = isGroup ? zoneY + (ch - gh) / 2 : zoneY;  // 横長は行内センター(プレビューと同じ)
+
+    // 白フチのプリント写真
+    ctx.save();
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowColor = "rgba(64,56,47,.08)";
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 4;
+    ctx.fillRect(x, y, cw, h);
+    ctx.restore();
+
+    var pad = 8;
+    drawCoverTop(ctx, images[index], x + pad, y + pad, cw - pad * 2, h - pad * 2);
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(64,56,47,.07)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + pad, y + pad, cw - pad * 2, h - pad * 2);
+    ctx.restore();
+
+    // コマ番号(ミント)
+    ctx.save();
+    ctx.font = "600 22px " + HAND_FONT;
+    ctx.fillStyle = "#D8A6A8";
+    ctx.textBaseline = "top";
+    ctx.shadowColor = "rgba(255,255,255,.70)";
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetY = 1;
+    ctx.fillText(String(index + 1).padStart(2, "0"), x + 14, y + 12);
+    ctx.restore();
+
+    // 名前(コマ下の紙上)
+    ctx.save();
+    ctx.font = "700 19px " + UI_FONT;
+    ctx.fillStyle = "#40382f";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    // letter-spacingの簡易再現
+    var name = cell.name.split("").join("\u2009");
+    ctx.fillText(name, x + cw / 2, zoneY + ch + 9);
+    ctx.restore();
+  });
+
+  // 下端キャプション(プレビューと同じ)
+  var footTop = P + rowPitch * 3 - G + 14;
+  ctx.save();
+  ctx.translate(P + 6, footTop + 22);
+  ctx.rotate(-1.2 * Math.PI / 180);
+  ctx.font = "600 40px " + HAND_FONT;
+  ctx.fillStyle = "#40382f";
+  ctx.textBaseline = "middle";
+  ctx.fillText("MY BEST 9", 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.font = "400 19px " + HAND_FONT;
+  ctx.fillStyle = "rgba(64,56,47,.58)";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.fillText("MAZZEL PERFORMANCE COSTUME — " + formatDate(new Date()), W - P - 4, footTop + 24);
+  ctx.restore();
+
+  return canvas;
+}
+
+/* ---------- 保存(共有シート→ダウンロード→スクショ案内) ---------- */
+async function saveImage() {
+  var originalText = saveBtn.textContent;
+  saveBtn.disabled = true;
+  saveBtn.textContent = "画像を作成中…";
+  setStatus("画像を作成中…", true);
+
+  try {
+    var canvas = await createSheetCanvas();
+    var blob = await canvasToBlob(canvas);
+    var file = new File([blob], "mazzel-best-visual-9-performance.png", { type: "image/png" });
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "MAZZEL Best Visual 9 - Performance Costume",
+          text: "MAZZEL Best Visual 9 パフォ衣装編を作ったよ"
+        });
+        setStatus("共有シートを開きました。", true);
+        return;
+      } catch (shareError) {
+        if (shareError && shareError.name === "AbortError") {
+          setStatus("共有をキャンセルしました。", true);
+          return;
+        }
+      }
+    }
+
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "mazzel-best-visual-9-performance.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    setStatus("画像を保存しました。", true);
+  } catch (error) {
+    console.error(error);
+    setStatus("画像の保存に失敗しました。うまくいかない場合はシートをスクリーンショットしてください。");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
+  }
+}
+
+function setStatus(message, ok) {
+  statusEl.textContent = message || "";
+  statusEl.classList.toggle("ok", !!ok);
+  if (!message) return;
+  window.clearTimeout(setStatus.timer);
+  setStatus.timer = window.setTimeout(function(){ statusEl.textContent = ""; }, 3500);
+}
+
+})();
+</script>
 </body>
 </html>
